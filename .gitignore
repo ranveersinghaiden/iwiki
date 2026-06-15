@@ -1,0 +1,15 @@
+/.agents/state/
+.env
+.idea/
+*.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.log
+*.pid
+.DS_Store

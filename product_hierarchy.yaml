@@ -1,0 +1,37 @@
+# Replace this file with your real product/feature hierarchy.
+# The classifier uses this to tag every indexed document.
+# Depth is flexible: product → feature → component (component is optional).
+
+products:
+  - name: Payments
+    features:
+      - name: Checkout
+        components:
+          - Payment Gateway
+          - Cart
+          - Promotions
+      - name: Invoicing
+        components:
+          - Invoice Generation
+          - Tax Calculation
+      - name: Refunds
+  - name: Tracking
+    features:
+      - name: GPS
+        components:
+          - Location Engine
+          - Geofencing
+      - name: Fleet Management
+        components:
+          - Driver Portal
+          - Vehicle Registry
+      - name: Reporting
+  - name: Platform
+    features:
+      - name: Authentication
+      - name: Integrations
+      - name: Infrastructure
+  - name: General
+    features:
+      - name: Uncategorized
+
