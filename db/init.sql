@@ -49,10 +49,12 @@ CREATE TABLE IF NOT EXISTS chunks (
     CONSTRAINT uq_chunks_doc_index UNIQUE (document_id, chunk_index)
 );
 
--- IVFFlat index for approximate nearest-neighbour search.
--- Rebuild with REINDEX after bulk loads to keep quality high.
+-- HNSW index — no minimum-row requirement, works from 1 row up.
+-- Faster build than IVFFlat for small-to-medium datasets.
+-- m=16, ef_construction=64 are sensible defaults; tune ef_search at query time.
 CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON chunks
-    USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+    USING hnsw (embedding vector_cosine_ops)
+    WITH (m = 16, ef_construction = 64);
 
 CREATE INDEX IF NOT EXISTS idx_chunks_fts       ON chunks USING GIN (fts_vector);
 CREATE INDEX IF NOT EXISTS idx_chunks_doc_id    ON chunks (document_id);

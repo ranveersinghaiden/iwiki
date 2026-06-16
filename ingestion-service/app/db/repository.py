@@ -27,9 +27,9 @@ _CHUNK_UPSERT = text("""
         :document_id,
         :chunk_index,
         :content,
-        :embedding::vector,
+        CAST(:embedding AS vector),
         :token_count,
-        :metadata::jsonb
+        CAST(:metadata AS jsonb)
     )
     ON CONFLICT (document_id, chunk_index) DO UPDATE
         SET content     = EXCLUDED.content,

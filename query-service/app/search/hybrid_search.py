@@ -1,8 +1,12 @@
 """
 Hybrid search: pgvector cosine similarity + Postgres FTS, fused with RRF.
 
-RRF score = Σ 1/(k + rank_i)  where k=60 (standard constant).
+RRF score = Σ 1/(k + rank_i)  where k=60.
 Higher score → better match.
+
+The query embedding is embedded as a SQL literal (not a bound parameter)
+to avoid asyncpg prepared-statement type-inference issues with the <=> operator.
+The vector contains only float literals from our own embedder — no user input.
 """
 from __future__ import annotations
 
@@ -19,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 _RRF_K = 60
 
-# ── Search result ──────────────────────────────────────────────────────────────
 
 @dataclass(frozen=True, slots=True)
 class SearchResult:
@@ -34,24 +37,19 @@ class SearchResult:
     product_hierarchy: dict[str, Any]
 
 
-# ── SQL query ─────────────────────────────────────────────────────────────────
-# Uses CTEs to run vector + FTS searches independently then fuse with RRF.
-# Permissions: allowed_spaces / allowed_projects / product_filter are applied
-# in both legs before fusion to avoid surfacing forbidden chunks post-rank.
-
-_HYBRID_SQL = """
+_HYBRID_SQL_TMPL = """
 WITH vector_search AS (
     SELECT
         c.id                                            AS chunk_id,
         c.content,
         c.document_id,
         ROW_NUMBER() OVER (
-            ORDER BY c.embedding <=> :query_vec::vector
+            ORDER BY c.embedding <=> '{vec_literal}'::vector
         )                                               AS vector_rank
     FROM chunks c
     JOIN documents d ON c.document_id = d.id
     {where_clause}
-    ORDER BY c.embedding <=> :query_vec::vector
+    ORDER BY c.embedding <=> '{vec_literal}'::vector
     LIMIT :candidate_limit
 ),
 fts_search AS (
@@ -109,18 +107,17 @@ async def hybrid_search(
 
     where_parts: list[str] = []
     params: dict[str, Any] = {
-        "query_vec": f"[{','.join(map(str, query_embedding))}]",
         "query_text": query_text,
         "candidate_limit": settings.search_candidate_limit,
         "top_k": top_k or settings.top_k_results,
     }
 
     if allowed_spaces:
-        where_parts.append("d.allowed_spaces && :allowed_spaces::text[]")
+        where_parts.append("d.allowed_spaces && CAST(:allowed_spaces AS text[])")
         params["allowed_spaces"] = "{" + ",".join(allowed_spaces) + "}"
 
     if allowed_projects:
-        where_parts.append("d.allowed_projects && :allowed_projects::text[]")
+        where_parts.append("d.allowed_projects && CAST(:allowed_projects AS text[])")
         params["allowed_projects"] = "{" + ",".join(allowed_projects) + "}"
 
     if product_filter:
@@ -128,19 +125,31 @@ async def hybrid_search(
         params["product_filter"] = product_filter
 
     where_clause = ("AND " + " AND ".join(where_parts)) if where_parts else ""
-    # FTS leg: additional WHERE is added after the fts_vector @@ condition
-    where_clause_fts = ("AND " + " AND ".join(where_parts)) if where_parts else ""
 
-    sql = _HYBRID_SQL.format(
+    # Embed float array as a SQL literal — safe: only float digits, no user input
+    vec_literal = "[" + ",".join(f"{v:.8f}" for v in query_embedding) + "]"
+
+    sql = _HYBRID_SQL_TMPL.format(
+        vec_literal=vec_literal,
         where_clause=where_clause,
-        where_clause_fts=where_clause_fts,
+        where_clause_fts=where_clause,
         k=_RRF_K,
     )
 
-    result = await session.execute(text(sql), params)
-    rows = result.fetchall()
+    logger.info("[hybrid_search] executing sql (first 300 chars): %s", sql[:300])
+    try:
+        # Tune HNSW ef_search for quality vs speed. candidate_limit * 2 gives
+        # a wider search beam than the default (40), ensuring small datasets are covered.
+        await session.execute(
+            text(f"SET LOCAL hnsw.ef_search = {max(40, settings.search_candidate_limit * 2)}")
+        )
+        result = await session.execute(text(sql), params)
+        rows = result.fetchall()
+    except Exception as exc:
+        logger.error("[hybrid_search] SQL failed: %s", exc, exc_info=exc)
+        return []
 
-    logger.debug("[hybrid_search] query=%r returned %d results", query_text[:80], len(rows))
+    logger.info("[hybrid_search] query=%r returned %d results", query_text[:80], len(rows))
 
     return [
         SearchResult(
