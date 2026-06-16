@@ -29,6 +29,7 @@ Orchestrate feature delivery. Break tasks down, delegate to specialists, run Cod
 | **TestPlanner** | Write BDD `.feature` files |
 | **Tester** | Run tests, report failures with full error messages |
 | **Security** | Audit credentials, API surfaces, inputs, actuator exposure — runs after **CodeReviewer approves**, never before |
+| **Documentation** | Update and consolidate docs after every change — precise, concise, DRY (one source of truth per concept) |
 
 ---
 
@@ -56,7 +57,7 @@ Orchestrate feature delivery. Break tasks down, delegate to specialists, run Cod
 
 ```
 INTAKE → SECURITY_DESIGN_REVIEW → DESIGN → [Gate 1]
-  → CODING → CODE_REVIEW → SECURITY_CODE_REVIEW → DOC_UPDATE → TESTING
+  → CODING → CODE_REVIEW → SECURITY_CODE_REVIEW → DOCUMENTATION → TESTING
   → FIXING → [Gate 2] → DONE
 ```
 
@@ -101,12 +102,13 @@ After CodeReviewer reports `APPROVED`:
 - CRITICAL/HIGH → send back to Coder (then CodeReviewer re-checks changed lines only), do not proceed to testing.
 - MEDIUM/LOW → file findings, proceed.
 
-### Stage 7 — DOC UPDATE ⚠️ REQUIRED AFTER EVERY MAJOR CHANGE
+### Stage 7 — DOCUMENTATION UPDATE ⚠️ MANDATORY AFTER EVERY CHANGE AFFECTING ARCHITECTURE, CONFIG, OR API
 After Coder confirms `BUILD SUCCESS`, CodeReviewer approves, and Security passes:
-- Delegate to Coder:
-  > "Update all affected documentation for [feature]. Files to update: `QA-ISystem-Architecture.md`, affected `{module}/README.md`. Keep changes **concise and precise** — no padding, no duplicate sections. Reflect new classes, config properties, data flows, and any API changes."
-- Major change definition: new service endpoint, new Kafka topic, new model field flowing through pipeline, new MCP tool, changed startup/configuration procedure.
-- Minor changes (bug fixes, internal refactors with no API/config change) → skip.
+- Delegate to Documentation:
+  > "Documentation, update docs for [feature]. Changed: [what changed and where]. Files affected: [list sections/APIs/config]. Primary files: `ARCHITECTURE.md`, `README.md`, `.env.example`. Keep **precise and concise** — link duplicates, merge overlapping sections, maintain one source of truth per concept. Report: what was updated, consolidated, or deleted."
+- Major change definition: new service endpoint, new Kafka topic, new config property, new data model field, new env var, changed startup/workflow.
+- Minor changes (bug fixes, internal refactors with no API/config/architecture change) → skip.
+- Documentation reports what it deleted/consolidated (zero is OK, but consolidation is encouraged).
 
 ### Stage 8 — TESTING
 - Delegate to Tester: `./mvnw test -pl <module> -am --no-transfer-progress`
@@ -123,13 +125,13 @@ LOOP (max 5 iterations):
   After 5 cycles → status = BLOCKED
 ```
 
-### Gate 2 — Human Approval Before Commit ⚠️ CODE REVIEW + SECURITY CLEARANCE REQUIRED
+### Gate 2 — Human Approval Before Commit ⚠️ CODE REVIEW + SECURITY CLEARANCE + DOCS REQUIRED
 Present:
 - Changed files list
 - CodeReviewer result (APPROVED — all BLOCKERs/MAJORs resolved; MINORs/INFOs listed)
 - Test pass summary
 - Security Code Review result (no unresolved CRITICAL/HIGH)
-- Doc changes summary
+- Documentation changes summary (what was updated, consolidated, or deleted)
 - Any new MCP tools
 
 Status → `WAITING_FOR_COMMIT_APPROVAL`. **Stop. Do not commit without approval.**
@@ -143,8 +145,9 @@ Status → `WAITING_FOR_COMMIT_APPROVAL`. **Stop. Do not commit without approval
 | Before Gate 1 | Security | API surfaces, credential flows, Kafka topics, data inputs | CRITICAL/HIGH |
 | After every Coder output | **CodeReviewer** | Java 25 idioms, DI, Kafka/Redis patterns, logging, error handling, testing, config, performance | BLOCKER/MAJOR |
 | After CodeReviewer APPROVED | Security | Changed files: auth, logging, secrets, error responses, temp files | CRITICAL/HIGH |
-| Fix iterations | CodeReviewer (changed lines only) → Security | Re-check only changed lines/files | BLOCKER/MAJOR → CRITICAL/HIGH |
-| Gate 2 | Both | Full findings report required | Unresolved BLOCKER/MAJOR or CRITICAL/HIGH |
+| After Security APPROVED | **Documentation** | Updated docs precise/concise, DRY (no duplication), one source of truth per concept | — |
+| Fix iterations | CodeReviewer (changed lines only) → Security → Documentation | Re-check only changed lines/files | BLOCKER/MAJOR → CRITICAL/HIGH |
+| Gate 2 | All | Full findings report required | Unresolved BLOCKER/MAJOR or CRITICAL/HIGH |
 
 ---
 
@@ -231,6 +234,9 @@ Touch `common` first when a feature affects shared infrastructure; rebuild depen
 **Coder (doc update):**
 > "Update documentation for [feature]. Files: `QA-ISystem-Architecture.md`, [affected READMEs]. Concise and precise — no padding. Reflect new classes, config, data flows, API changes."
 
+**Documentation (after Security approves):**
+> "Documentation, update docs for [feature]. Changed: [affected sections]. Primary files: `ARCHITECTURE.md`, `README.md`, `.env.example` only. Keep precise, concise, DRY — link duplicates, merge overlapping content. One source of truth per concept. Report: what was updated, consolidated, or deleted."
+
 ---
 
 ## Safety Rules — Set `BLOCKED` and stop when:
@@ -252,5 +258,5 @@ Touch `common` first when a feature affects shared infrastructure; rebuild depen
 - Skip CodeReviewer — mandatory after every Coder output, before Security.
 - Skip Security review — mandatory after CodeReviewer APPROVED and after every fix.
 - Forward to Security while CodeReviewer has outstanding BLOCKERs or MAJORs.
-- Skip doc update after a major change.
+- Skip Documentation — mandatory after Security APPROVED for any change affecting architecture, config, or API.
 - Commit or merge without explicit human Gate 2 approval.

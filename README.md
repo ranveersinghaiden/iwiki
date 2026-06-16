@@ -5,6 +5,17 @@ Hybrid vector + FTS search → LLM-generated answers with citations.
 
 ---
 
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| **[ARCHITECTURE.md](ARCHITECTURE.md)** | System design, data model, pipeline flows, performance, deployment, and troubleshooting guide |
+| **[README.md](README.md)** | (This file) Quick start, environment variables, API reference, local development setup |
+
+> **Archived:** [TESTING.md](TESTING.md) and [POSTGRES.md](POSTGRES.md) content consolidated into ARCHITECTURE.md § Troubleshooting and README.md § Local Development.
+
+---
+
 ## Architecture
 
 ```
@@ -164,8 +175,10 @@ curl -X POST http://localhost:8090/api/v1/ingest/sync/incremental \
 
 ## Local Development (without Docker)
 
+Three terminals:
+
 ```bash
-# Terminal 1 — Postgres
+# Terminal 1 — Postgres (or: docker compose up -d db)
 docker run -p 5432:5432 \
   -e POSTGRES_USER=iwiki -e POSTGRES_PASSWORD=iwiki -e POSTGRES_DB=iwiki \
   -v $(pwd)/db/init.sql:/docker-entrypoint-initdb.d/init.sql \
@@ -185,4 +198,43 @@ pip install -r requirements.txt
 cp ../.env.example .env
 uvicorn main:app --port 8091 --reload
 ```
+
+### Database Connection Methods
+
+| Scenario | Command | Notes |
+|----------|---------|-------|
+| Postgres in Docker (compose) | `docker compose up -d db` | Easiest for local dev |
+| Postgres standalone | `docker run ... pgvector/pgvector:pg16` | Full control, more manual setup |
+| psql CLI (from container) | `docker compose exec db psql -U iwiki -d iwiki` | Direct SQL access |
+| psql CLI (from host) | `psql postgresql://iwiki:iwiki@localhost:5432/iwiki` | Requires `psql` installed locally |
+| GUI tools (DBeaver, DataGrip) | Connect to `localhost:5432` user `iwiki` password `iwiki` | Visual exploration |
+
+### Postgres Connection String
+
+```
+postgresql://[user]:[password]@[host]:[port]/[database]
+postgresql://iwiki:iwiki@localhost:5432/iwiki
+```
+
+For async Python (FastAPI):
+```
+postgresql+asyncpg://iwiki:iwiki@localhost:5432/iwiki
+```
+
+### Quick Database Checks
+
+```bash
+# Connect to Postgres
+docker compose exec db psql -U iwiki -d iwiki
+
+# Inside psql:
+SELECT COUNT(*) FROM chunks;                    -- total chunks
+SELECT dimensions(embedding) FROM chunks LIMIT 1;  -- verify vector dim (should match EMBEDDING_DIM)
+SELECT * FROM pg_stat_user_indexes LIMIT 5;    -- index health
+\q  -- exit
+```
+
+**Full setup walkthrough:** See [ARCHITECTURE.md](ARCHITECTURE.md) § Deployment Architecture
+
+**Complete POSTGRES.md reference (backup/restore, tuning, connection methods, troubleshooting):** See archived [POSTGRES.md](POSTGRES.md)
 
