@@ -71,3 +71,30 @@ CREATE TABLE IF NOT EXISTS sync_state (
 INSERT INTO sync_state (source_type) VALUES ('jira'), ('confluence')
 ON CONFLICT DO NOTHING;
 
+-- ─── product_experts ──────────────────────────────────────────────────────────
+-- One row per product (or product+component). Synthesised by the ingestion
+-- pipeline after every sync. Consumed by the query service and AI agents to
+-- ground feature development and test generation in rich product context.
+CREATE TABLE IF NOT EXISTS product_experts (
+    id                      UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- Classification keys — match product_hierarchy.yaml structure
+    product                 TEXT        NOT NULL,
+    component               TEXT,                           -- NULL = product-level expert
+    -- Synthesised knowledge
+    description             TEXT        NOT NULL DEFAULT '', -- 1-2 sentence human summary
+    compressed_context      TEXT        NOT NULL DEFAULT '', -- LLM-synthesised dense context for agents
+    -- Dependency graph
+    -- Each entry: {"product": "...", "component": "...", "reason": "..."}
+    upstream_dependencies   JSONB       NOT NULL DEFAULT '[]',
+    downstream_affected     JSONB       NOT NULL DEFAULT '[]',
+    -- Provenance
+    source_document_count   INT         NOT NULL DEFAULT 0,
+    generated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_product_experts UNIQUE (product, COALESCE(component, ''))
+);
+
+CREATE INDEX IF NOT EXISTS idx_experts_product   ON product_experts (product);
+CREATE INDEX IF NOT EXISTS idx_experts_component ON product_experts (component)
+    WHERE component IS NOT NULL;
+

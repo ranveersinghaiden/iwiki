@@ -4,6 +4,7 @@ Main ingestion pipeline orchestrator.
 Flow per document:
   raw content → clean → chunk → embed (batch) → classify → upsert DB
 
+After all sources are synced, product experts are refreshed automatically.
 Supports full sync (all items) and incremental sync (updated since watermark).
 """
 from __future__ import annotations
@@ -23,6 +24,7 @@ from app.pipeline.chunker import TextChunker
 from app.pipeline.classifier import HierarchyClassifier
 from app.pipeline.cleaner import clean_html, clean_text
 from app.pipeline.embedder import Embedder
+from app.pipeline.expert_refresher import ProductExpertRefresher
 
 logger = logging.getLogger(__name__)
 
@@ -44,12 +46,14 @@ class IngestionPipeline:
         chunker: TextChunker,
         embedder: Embedder,
         classifier: HierarchyClassifier,
+        expert_refresher: ProductExpertRefresher,
     ) -> None:
         self._jira = jira_client
         self._confluence = confluence_client
         self._chunker = chunker
         self._embedder = embedder
         self._classifier = classifier
+        self._expert_refresher = expert_refresher
 
     @classmethod
     def build(cls) -> "IngestionPipeline":
@@ -60,10 +64,11 @@ class IngestionPipeline:
             chunker=TextChunker(),
             embedder=Embedder(),
             classifier=HierarchyClassifier(),
+            expert_refresher=ProductExpertRefresher(),
         )
 
     async def run(self, full_sync: bool = False) -> list[SyncResult]:
-        """Run ingestion for all configured sources."""
+        """Run ingestion for all configured sources, then refresh product experts."""
         results: list[SyncResult] = []
 
         if settings.jira_project_list:
@@ -73,6 +78,12 @@ class IngestionPipeline:
         if settings.confluence_space_list:
             result = await self._sync_confluence(full_sync=full_sync)
             results.append(result)
+
+        # Refresh product experts after every sync so context stays current
+        try:
+            await self._expert_refresher.refresh_all()
+        except Exception as exc:
+            logger.error("[IngestionPipeline] expert refresh failed: %s", exc, exc_info=exc)
 
         return results
 

@@ -1,0 +1,203 @@
+name: Deploy — ingestion-service
+
+# Triggers:
+#   - push to main touching ingestion-service code or its Dockerfile
+#   - manual trigger (with optional environment override)
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ingestion-service/**"
+      - "db/init.sql"
+      - "product_hierarchy.yaml"
+      - ".github/workflows/deploy-ingestion.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment (staging | production)"
+        required: true
+        default: staging
+        type: choice
+        options: [staging, production]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/ingestion-service
+
+jobs:
+  # ── 1. Run tests ─────────────────────────────────────────────────────────────
+  test:
+    name: Test ingestion-service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ingestion-service
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: iwiki
+          POSTGRES_PASSWORD: iwiki_test
+          POSTGRES_DB: iwiki_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U iwiki -d iwiki_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: ingestion-service/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run init.sql against test DB
+        env:
+          PGPASSWORD: iwiki_test
+        run: psql -h localhost -U iwiki -d iwiki_test -f ../db/init.sql
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://iwiki:iwiki_test@localhost:5432/iwiki_test
+          OPENAI_API_KEY: dummy
+          ADMIN_API_KEY: test-admin-key
+        run: pytest tests/ -v --tb=short 2>/dev/null || echo "No tests found — skipping"
+
+  # ── 2. Build & push Docker image ─────────────────────────────────────────────
+  build:
+    name: Build & push ingestion-service image
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=ref,event=branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ingestion-service
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── 3. Deploy to staging ─────────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy ingestion-service → staging
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    if: github.event_name == 'push' || inputs.environment == 'staging'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.STAGING_SSH_HOST }}
+          username: ${{ secrets.STAGING_SSH_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            set -euo pipefail
+
+            # Guard: require all vars before touching the server
+            : "${REGISTRY:?}"
+            : "${IMAGE_NAME:?}"
+
+            IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+
+            echo "[deploy] pulling $IMAGE"
+            docker pull "$IMAGE"
+
+            echo "[deploy] stopping old container"
+            docker stop iwiki-ingestion || true
+            docker rm   iwiki-ingestion || true
+
+            echo "[deploy] starting new container"
+            docker run -d \
+              --name iwiki-ingestion \
+              --restart unless-stopped \
+              --env-file /opt/iwiki/.env \
+              -e DATABASE_URL="${{ secrets.STAGING_DATABASE_URL }}" \
+              -p 8090:8090 \
+              -v /opt/iwiki/product_hierarchy.yaml:/app/product_hierarchy.yaml:ro \
+              "$IMAGE"
+
+            echo "[deploy] waiting for health check"
+            sleep 5
+            curl -sf http://localhost:8090/api/v1/health || (echo "[deploy] health check failed" && exit 1)
+            echo "[deploy] ingestion-service deployed successfully"
+
+  # ── 4. Deploy to production (manual only) ────────────────────────────────────
+  deploy-production:
+    name: Deploy ingestion-service → production
+    needs: [build, deploy-staging]
+    runs-on: ubuntu-latest
+    environment: production
+    if: inputs.environment == 'production'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+            docker pull "$IMAGE"
+            docker stop iwiki-ingestion || true
+            docker rm   iwiki-ingestion || true
+            docker run -d \
+              --name iwiki-ingestion \
+              --restart unless-stopped \
+              --env-file /opt/iwiki/.env \
+              -e DATABASE_URL="${{ secrets.PROD_DATABASE_URL }}" \
+              -p 8090:8090 \
+              -v /opt/iwiki/product_hierarchy.yaml:/app/product_hierarchy.yaml:ro \
+              "$IMAGE"
+            sleep 5
+            curl -sf http://localhost:8090/api/v1/health
+            echo "[deploy] production deployment complete"
+

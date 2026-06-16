@@ -41,3 +41,26 @@ class SyncState(Base):
     total_items_indexed: Mapped[int] = mapped_column(Integer, default=0)
     last_run_status: Mapped[str] = mapped_column(String(50), default="never_run")
 
+
+class ProductExpert(Base):
+    """Synthesised product/component knowledge used by AI agents and query service."""
+    __tablename__ = "product_experts"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    product: Mapped[str] = mapped_column(Text, nullable=False)
+    component: Mapped[Optional[str]] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text, default="")
+    compressed_context: Mapped[str] = mapped_column(Text, default="")
+    upstream_dependencies: Mapped[list] = mapped_column(JSONB, default=list)
+    downstream_affected: Mapped[list] = mapped_column(JSONB, default=list)
+    source_document_count: Mapped[int] = mapped_column(Integer, default=0)
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+

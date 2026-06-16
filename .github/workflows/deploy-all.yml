@@ -1,0 +1,181 @@
+name: Deploy — all services
+
+# Full-stack deployment: build + push both images, run DB migrations,
+# then deploy both services. Triggered manually only.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: staging
+        type: choice
+        options: [staging, production]
+      run_db_migration:
+        description: "Apply db/init.sql migration?"
+        required: true
+        default: "true"
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # ── 1. Build both images in parallel ─────────────────────────────────────────
+  build-ingestion:
+    name: Build ingestion-service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/ingestion-service
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./ingestion-service
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-query:
+    name: Build query-service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/query-service
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./query-service
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── 2. DB migration (optional) ───────────────────────────────────────────────
+  migrate:
+    name: Apply DB migration
+    needs: [build-ingestion, build-query]
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    if: inputs.run_db_migration == true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply init.sql via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ inputs.environment == 'production' && secrets.PROD_SSH_HOST || secrets.STAGING_SSH_HOST }}
+          username: ${{ inputs.environment == 'production' && secrets.PROD_SSH_USER || secrets.STAGING_SSH_USER }}
+          key: ${{ inputs.environment == 'production' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
+          script: |
+            set -euo pipefail
+
+            DB_URL="${{ inputs.environment == 'production' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}"
+            # Convert asyncpg URL to psql-compatible URL
+            PSQL_URL="${DB_URL/postgresql+asyncpg/postgresql}"
+
+            # Guard: DB_URL must be set
+            if [ -z "${DB_URL:-}" ]; then
+              echo "[ERROR] DATABASE_URL secret not set for environment ${{ inputs.environment }}"
+              exit 1
+            fi
+
+            echo "[migrate] applying db/init.sql"
+            psql "$PSQL_URL" -f /opt/iwiki/db/init.sql
+            echo "[migrate] migration complete"
+
+  # ── 3. Deploy both services ───────────────────────────────────────────────────
+  deploy:
+    name: Deploy both services → ${{ inputs.environment }}
+    needs: [build-ingestion, build-query, migrate]
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    # Run even if migrate was skipped (run_db_migration == false)
+    if: always() && (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ inputs.environment == 'production' && secrets.PROD_SSH_HOST || secrets.STAGING_SSH_HOST }}
+          username: ${{ inputs.environment == 'production' && secrets.PROD_SSH_USER || secrets.STAGING_SSH_USER }}
+          key: ${{ inputs.environment == 'production' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
+          script: |
+            set -euo pipefail
+
+            ENV="${{ inputs.environment }}"
+            REGISTRY="${{ env.REGISTRY }}"
+            REPO="${{ github.repository }}"
+            DB_URL="${{ inputs.environment == 'production' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}"
+
+            INGESTION_IMAGE="${REGISTRY}/${REPO}/ingestion-service:latest"
+            QUERY_IMAGE="${REGISTRY}/${REPO}/query-service:latest"
+
+            echo "[deploy] pulling images"
+            docker pull "$INGESTION_IMAGE"
+            docker pull "$QUERY_IMAGE"
+
+            echo "[deploy] stopping old containers"
+            docker stop iwiki-ingestion iwiki-query || true
+            docker rm   iwiki-ingestion iwiki-query || true
+
+            echo "[deploy] starting ingestion-service"
+            docker run -d \
+              --name iwiki-ingestion \
+              --restart unless-stopped \
+              --env-file /opt/iwiki/.env \
+              -e DATABASE_URL="$DB_URL" \
+              -p 8090:8090 \
+              -v /opt/iwiki/product_hierarchy.yaml:/app/product_hierarchy.yaml:ro \
+              "$INGESTION_IMAGE"
+
+            echo "[deploy] starting query-service"
+            docker run -d \
+              --name iwiki-query \
+              --restart unless-stopped \
+              --env-file /opt/iwiki/.env \
+              -e DATABASE_URL="$DB_URL" \
+              -p 8091:8091 \
+              "$QUERY_IMAGE"
+
+            echo "[deploy] waiting for health checks"
+            sleep 8
+            curl -sf http://localhost:8090/api/v1/health || (echo "[ERROR] ingestion health check failed" && exit 1)
+            curl -sf http://localhost:8091/api/v1/health || (echo "[ERROR] query health check failed" && exit 1)
+
+            echo "[deploy] both services healthy in ${ENV}"
+
