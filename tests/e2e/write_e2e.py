@@ -1,4 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
+"""Write the E2E test script to disk."""
+import os
+
+SCRIPT = r"""#!/usr/bin/env bash
 # iWiki Comprehensive E2E Test Suite
 # Covers: DB schema, all ingestion + query endpoints, admin auth,
 #   input validation, idempotency, permission filters, expert refresh,
@@ -36,19 +40,11 @@ assert_ge() {
 
 cleanup() {
   echo ""; echo "── Cleanup"
-  if [ "${#PIDS[@]}" -gt 0 ]; then
-    kill "${PIDS[@]}" 2>/dev/null || true
-    sleep 1
-    kill -9 "${PIDS[@]}" 2>/dev/null || true
-  fi
+  [ "${#PIDS[@]}" -gt 0 ] && kill "${PIDS[@]}" 2>/dev/null || true
   docker stop iwiki-e2e-db 2>/dev/null || true
   docker rm   iwiki-e2e-db 2>/dev/null || true
 }
 trap cleanup EXIT
-
-# ── Kill any leftover services from a previous run ────────────────────────────
-lsof -ti :"$STUB_PORT" -ti :"$INGESTION_PORT" -ti :"$QUERY_PORT" 2>/dev/null \
-  | xargs kill -9 2>/dev/null || true
 
 wait_http() {
   local url="$1" lbl="$2" n="${3:-30}"
@@ -452,3 +448,17 @@ echo "  Logs: /tmp/ingestion-e2e.log   /tmp/query-e2e.log"
 echo ""
 [ "$FAIL" -gt 0 ] && echo -e "${RED}  $FAIL assertion(s) FAILED${NC}" && exit 1
 exit 0
+"""
+
+path = "/Users/ranveeraiden/Desktop/Workspace/iwiki/tests/e2e/run_e2e.sh"
+with open(path, "w") as f:
+    f.write(SCRIPT)
+os.chmod(path, 0o755)
+print(f"Written {path} ({os.path.getsize(path)} bytes)")
+
+
+
+
+
+
+

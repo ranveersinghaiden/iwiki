@@ -111,20 +111,29 @@ After Coder confirms `BUILD SUCCESS`, CodeReviewer approves, and Security passes
 - Minor changes (bug fixes, internal refactors with no API/config/architecture change) → skip.
 - Documentation reports what it deleted/consolidated (zero is OK, but consolidation is encouraged).
 
-### Stage 8 — TESTING
-- Delegate to Tester: `./mvnw test -pl <module> -am --no-transfer-progress`
-- Status → `TESTING`.
+### Stage 8 — TESTING ⚠️ MANDATORY AFTER EVERY CODE CHANGE
+**Always run after any Coder output — including fixes.**
+
+- **Python services (iWiki):** Delegate to Tester:
+  > "Run `bash tests/e2e/run_e2e.sh` from repo root. Report: PASSED count, FAILED count, and for every failure: step number, assertion, expected vs actual."
+- **Java services (QA-ISystem):** Delegate to Tester:
+  > "Run `./mvnw test -pl <module> -am --no-transfer-progress`. Report: pass count, fail count, per failure: class, method, full error."
+
+- Status → `TESTING`. Wait for full pass before proceeding to Gate 2.
+- Partial pass is NOT acceptable — all assertions must pass.
 
 ### Stage 9 — FIXING (if tests fail)
 ```
 LOOP (max 5 iterations):
-  1. Tester reports failure
-  2. → Coder fixes (do not modify passing tests)
+  1. Tester reports failure (step number, assertion, expected vs actual)
+  2. → Coder fixes (do not modify passing tests or test assertions)
   3. → CodeReviewer re-checks only the changed lines
   4. → Security re-scans changed files
-  5. → Back to Tester
+  5. → Back to Tester (run FULL suite, not just failed tests)
   After 5 cycles → status = BLOCKED
 ```
+
+**Rule:** Every fix cycle must re-run the full test suite. A partial run is not accepted.
 
 ### Gate 2 — Human Commits Code ⚠️ HUMAN ONLY - CONDUCTOR STOPS HERE
 Present to human:
@@ -156,8 +165,9 @@ Conductor resumes after human confirms commit complete.
 | After every Coder output | **CodeReviewer** | Java 25 idioms, DI, Kafka/Redis patterns, logging, error handling, testing, config, performance | BLOCKER/MAJOR |
 | After CodeReviewer APPROVED | Security | Changed files: auth, logging, secrets, error responses, temp files | CRITICAL/HIGH |
 | After Security APPROVED | **Documentation** | Updated docs precise/concise, DRY (no duplication), one source of truth per concept | — |
-| Fix iterations | CodeReviewer (changed lines only) → Security → Documentation | Re-check only changed lines/files | BLOCKER/MAJOR → CRITICAL/HIGH |
-| Gate 2 | **HUMAN** | All approvals complete. Human must commit via git. Conductor stops here. | NEVER Conductor |
+| **After every code change** | **Tester** | Full test suite must pass (`bash tests/e2e/run_e2e.sh` or `./mvnw test`) | ALL failures |
+| Fix iterations | CodeReviewer (changed lines only) → Security → **Tester (full suite)** | Re-check only changed lines/files; re-run full tests | BLOCKER/MAJOR → CRITICAL/HIGH |
+| Gate 2 | **HUMAN** | All approvals + all tests green. Human must commit via git. Conductor stops here. | NEVER Conductor |
 
 ---
 
@@ -241,8 +251,34 @@ Touch `common` first when a feature affects shared infrastructure; rebuild depen
 **Coder (doc update):**
 > "Update documentation for [feature]. Files: `QA-ISystem-Architecture.md`, [affected READMEs]. Concise and precise — no padding. Reflect new classes, config, data flows, API changes."
 
-**Documentation (after Security approves):**
-> "Documentation, update docs for [feature]. Changed: [affected sections]. Primary files: `ARCHITECTURE.md`, `README.md`, `.env.example` only. Keep precise, concise, DRY — link duplicates, merge overlapping content. One source of truth per concept. Report: what was updated, consolidated, or deleted."
+**Tester (Python/iWiki):**
+> "Run `bash tests/e2e/run_e2e.sh` from repo root. Report: total PASSED, total FAILED. For every failure: step number, assertion text, expected value, actual value."
+
+**Tester (Java/QA-ISystem):**
+> "Run `./mvnw test -pl [module] -am --no-transfer-progress`. Report: pass count, fail count, and per failure: test class, method, full error message."
+
+---
+
+## Testing Reference
+
+### Python services (iWiki)
+```bash
+# Run from repo root — starts Docker Postgres, stub OpenAI, both services
+bash tests/e2e/run_e2e.sh
+```
+Covers: DB schema, all endpoints, auth, validation, 8 docs, idempotency,
+RAG queries, permission filters, expert refresh + DB assertions, GET /experts.
+
+### Java services (QA-ISystem)
+```bash
+./mvnw test -pl <module> -am --no-transfer-progress   # single module
+./mvnw test --no-transfer-progress                    # all modules
+```
+
+### When to run tests (mandatory)
+- After **every** Coder change — no exceptions
+- After every fix iteration — full suite, not partial
+- Must be **100% green** before Gate 2
 
 ---
 
@@ -267,5 +303,6 @@ Touch `common` first when a feature affects shared infrastructure; rebuild depen
 - Skip Security review — mandatory after CodeReviewer APPROVED and after every fix.
 - Forward to Security while CodeReviewer has outstanding BLOCKERs or MAJORs.
 - Skip Documentation — mandatory after Security APPROVED for any change affecting architecture, config, or API.
+- **Skip testing — mandatory after every Coder change and every fix iteration. Gate 2 requires 100% green.**
 - **COMMIT OR PUSH CODE.** Human must execute git commands. Conductor stops at Gate 2. Human commits.
 - Use git commands (`git add`, `git commit`, `git push`). Only humans commit.

@@ -90,9 +90,16 @@ CREATE TABLE IF NOT EXISTS product_experts (
     -- Provenance
     source_document_count   INT         NOT NULL DEFAULT 0,
     generated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_product_experts UNIQUE (product, COALESCE(component, ''))
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Two partial unique indexes replace the COALESCE-based constraint (not valid syntax):
+-- One row per product with no component (product-level expert)
+CREATE UNIQUE INDEX IF NOT EXISTS uq_experts_product_only
+    ON product_experts (product) WHERE component IS NULL;
+-- One row per (product, component) pair
+CREATE UNIQUE INDEX IF NOT EXISTS uq_experts_product_component
+    ON product_experts (product, component) WHERE component IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_experts_product   ON product_experts (product);
 CREATE INDEX IF NOT EXISTS idx_experts_component ON product_experts (component)

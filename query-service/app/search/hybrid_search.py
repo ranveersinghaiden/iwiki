@@ -48,6 +48,7 @@ WITH vector_search AS (
         )                                               AS vector_rank
     FROM chunks c
     JOIN documents d ON c.document_id = d.id
+    WHERE 1=1
     {where_clause}
     ORDER BY c.embedding <=> '{vec_literal}'::vector
     LIMIT :candidate_limit
@@ -114,11 +115,11 @@ async def hybrid_search(
 
     if allowed_spaces:
         where_parts.append("d.allowed_spaces && CAST(:allowed_spaces AS text[])")
-        params["allowed_spaces"] = "{" + ",".join(allowed_spaces) + "}"
+        params["allowed_spaces"] = list(allowed_spaces)
 
     if allowed_projects:
         where_parts.append("d.allowed_projects && CAST(:allowed_projects AS text[])")
-        params["allowed_projects"] = "{" + ",".join(allowed_projects) + "}"
+        params["allowed_projects"] = list(allowed_projects)
 
     if product_filter:
         where_parts.append("d.product_hierarchy->>'product' = :product_filter")
