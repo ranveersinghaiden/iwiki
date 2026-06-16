@@ -24,8 +24,9 @@ Orchestrate feature delivery. Break tasks down, delegate to specialists, run Cod
 | Agent | Responsibility |
 |-------|---------------|
 | **Conductor** | Orchestrate, plan, checkpoint, track — never implement |
-| **Coder** | Implement Java/Spring Boot code, fix compilation errors |
-| **CodeReviewer** | Audit every Coder change for Java 25, Spring Boot 4, Kafka/Redis, logging, error-handling, and testing rules — runs after every Coder output, before Security |
+| **JavaCoder** | Implement Java/Spring Boot code (Java 25, Spring Boot 4, Kafka/Redis patterns) |
+| **PythonCoder** | Implement Python code (FastAPI, async, dataclasses, RAG services) |
+| **CodeReviewer** | Audit every Coder change for language standards, logging, error-handling, testing rules — runs after every Coder output, before Security |
 | **TestPlanner** | Write BDD `.feature` files |
 | **Tester** | Run tests, report failures with full error messages |
 | **Security** | Audit credentials, API surfaces, inputs, actuator exposure — runs after **CodeReviewer approves**, never before |
@@ -35,21 +36,19 @@ Orchestrate feature delivery. Break tasks down, delegate to specialists, run Cod
 
 ## Non-Negotiable Constraints (enforced in all delegations)
 
-| Rule | Detail |
-|------|--------|
-| Java 25 | Records, sealed classes, pattern matching, virtual threads |
-| Spring Boot 4.0.x | Constructor injection via `@RequiredArgsConstructor` only |
-| Zero Mockito | No `@Mock`, `@MockBean`, `@Spy`, `@InjectMocks` — use real inner-class test doubles |
-| Kafka topics | Bind via `${kafka.topics.xxx}` — never hardcode |
-| No secrets in code | All credentials → `${ENV_VAR_NAME:}` placeholders only — never hardcode tokens, passwords, or URLs with credentials |
-| **No secrets in scripts** | Shell scripts **must** read credentials from env vars only; guard pattern required — fail with `[ERROR]` and `exit 1` if unset; no literal token assignments (`TOKEN="ghp_..."`) ever; no inline credential expansions before commands |
-| No secrets in state files | `.agents/state/` JSON files must never contain tokens, passwords, or repo URLs with credentials |
-| No credentials in git remote URLs | `.git/config` remotes must use `https://github.com/...` — never embed a PAT in the URL |
-| Check `common/` first | Never duplicate a class that already exists in the `common` module |
-| `@ConditionalOnProperty` | Guard every optional bean (AI, Redis, GitHub) with a condition |
-| `@Slf4j` + `[ClassName]` prefix | Every log statement |
-| No `spring.main.allow-bean-definition-overriding` | Fix the root cause |
-| No `@SneakyThrows` in services | Declare `throws` or wrap at the boundary |
+**CONSOLIDATED IN:** [`.github/agents/SHARED-RULES.md`](SHARED-RULES.md)
+
+- Java 25 (records, sealed, pattern matching, virtual threads)
+- Spring Boot 4 DI (constructor injection via Lombok only)
+- Zero Mockito testing policy
+- Kafka topology via `${kafka.topics.xxx}`
+- No secrets in code, scripts, or state files
+- Guard pattern for env vars in shell scripts
+- No credentials in git remote URLs
+- Check `common/` first before implementing
+- Conditional beans via `@ConditionalOnProperty`
+- Logging via `@Slf4j` with `[ClassName]` prefix
+- Proper error handling + no `@SneakyThrows`
 
 ---
 
@@ -87,7 +86,7 @@ Block Gate 1 on CRITICAL/HIGH findings.
 
 ### Stage 5 — CODE REVIEW ⚠️ MANDATORY AFTER EVERY CODER OUTPUT
 After **every** Coder change, before Security runs:
-> "CodeReviewer, review changed files: [list]. Check all sections in `.github/agents/CodeReviewer.agent.md` — Java 25 idioms, Spring Boot DI, Kafka/Redis patterns, logging, error handling, testing zero-mock policy, configuration, and performance."
+> "CodeReviewer, review changed files: [list]. Check all sections in [`.github/agents/CHECKLISTS.md`](CHECKLISTS.md) § CodeReviewer Checklist (12 sections: Java 25, DI, bean lifecycle, logging, error handling, Kafka, Redis, testing, API, config, performance, maintainability)."
 
 **CodeReviewer gate rules:**
 - BLOCKER/MAJOR found → return all findings to Coder; Coder fixes **all** in a single pass; CodeReviewer re-reviews changed lines only.
@@ -97,7 +96,7 @@ After **every** Coder change, before Security runs:
 
 ### Stage 6 — SECURITY CODE REVIEW ⚠️ MANDATORY AFTER CODE REVIEW APPROVES
 After CodeReviewer reports `APPROVED`:
-> "Security, review changed files: [list]. Check: no credentials in code/scripts/state files, error messages sanitised, all new endpoints protected, input size limits present, temp files secure, no secrets in process args."
+> "Security, review changed files: [list]. Check all sections in [`.github/agents/CHECKLISTS.md`](CHECKLISTS.md) § Security Audit Checklist (10 sections: credentials, API auth, input validation, actuator, error responses, CVEs, ProcessBuilder, data security, headers, temp files). Also check: [SHARED-RULES.md](SHARED-RULES.md) § Shell Script Safety for any `.sh` files."
 
 - CRITICAL/HIGH → send back to Coder (then CodeReviewer re-checks changed lines only), do not proceed to testing.
 - MEDIUM/LOW → file findings, proceed.
@@ -210,26 +209,23 @@ Touch `common` first when a feature affects shared infrastructure; rebuild depen
 
 ## Delegation Templates
 
-**Coder:**
-> "Implement [task] in module [name]. Follow `.github/instructions/`. Constructor injection, `@Slf4j [ClassName]`, real test doubles (no Mockito). Run `./mvnw test -pl [module] -am` and confirm BUILD SUCCESS."
+**JavaCoder:**
+> "Implement [task] in Java module [name]. Reference [JavaCoder.agent.md](JavaCoder.agent.md), [GenericCodingPractices.md](GenericCodingPractices.md), [SHARED-RULES.md](SHARED-RULES.md). Run `./mvnw test -pl [module] -am` and confirm BUILD SUCCESS."
+
+**PythonCoder:**
+> "Implement [task] in Python module [name]. Reference [PythonCoder.agent.md](PythonCoder.agent.md), [GenericCodingPractices.md](GenericCodingPractices.md), [SHARED-RULES.md](SHARED-RULES.md). Run `pytest` and confirm all tests pass."
 
 **CodeReviewer:**
-> "CodeReviewer, review changed files: [list]. Check all sections in `.github/agents/CodeReviewer.agent.md` — Java 25 idioms, Spring Boot DI, Kafka/Redis patterns, logging, error handling, zero-mock testing policy, configuration safety, and performance. Report all findings with file:line references."
+> "Review changed files: [list]. Use [CHECKLISTS.md](CHECKLISTS.md) § CodeReviewer Checklist (all 12 sections). Report all findings with file:line references. Status: APPROVED | NEEDS_FIXES."
 
-**Coder (fix CodeReviewer findings):**
-> "Fix all BLOCKER and MAJOR findings from CodeReviewer: [paste findings]. Fix everything in a single pass. Run `./mvnw test -pl [module] -am` and confirm BUILD SUCCESS."
+**Coder (fix findings):**
+> "Fix all BLOCKER and MAJOR findings from CodeReviewer: [paste findings]. Fix everything in a single pass. Run tests and confirm BUILD SUCCESS."
 
-**Tester:**
-> "Run `./mvnw test -pl [module] -am --no-transfer-progress`. Report: pass count, fail count, and per failure: test class, method, full error message."
+**Security (design review):**
+> "Security, review design for [feature]. Check [SHARED-RULES.md](SHARED-RULES.md) § Non-Negotiable Constraints. New endpoints, credential flows, input data, Kafka topics, Redis keys."
 
-**TestPlanner:**
-> "Write BDD scenarios for [feature] in module [name]. Place `.feature` files under `[module]/src/test/resources/features/`. JUnit 5 conventions. No Java code."
-
-**Security (design):**
-> "Security, review design for [feature]. New endpoints: [list]. Credential flows: [describe]. Input data: [describe]. Check `.github/agents/Security.agent.md`."
-
-**Security (code review — runs after CodeReviewer APPROVED):**
-> "Security, review changed files: [list]. Check: no credentials in code/scripts/state files, error messages sanitised, new endpoints protected, input limits present, temp files secure, no secrets in process args."
+**Security (code review):**
+> "Review changed files: [list]. Use [CHECKLISTS.md](CHECKLISTS.md) § Security Audit Checklist (all 10 sections). For `.sh` files, check [SHARED-RULES.md](SHARED-RULES.md) § Shell Script Safety. Report CRITICAL/HIGH/MEDIUM/LOW."
 
 **Coder (doc update):**
 > "Update documentation for [feature]. Files: `QA-ISystem-Architecture.md`, [affected READMEs]. Concise and precise — no padding. Reflect new classes, config, data flows, API changes."
