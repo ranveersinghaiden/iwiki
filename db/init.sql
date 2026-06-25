@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS chunks (
     document_id     UUID    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
     chunk_index     INT     NOT NULL,
     content         TEXT    NOT NULL,
-    embedding       vector(1536),
+    embedding       vector(768),
     -- generated FTS column — no manual maintenance needed
     fts_vector      TSVECTOR GENERATED ALWAYS AS
                         (to_tsvector('english', coalesce(content, ''))) STORED,

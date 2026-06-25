@@ -1,0 +1,638 @@
+products:
+- name: Safety
+  features:
+  - name: Video Telematics
+    components:
+    - name: Clarity Dashcam
+      keywords:
+      - Clarity
+      - clarity
+      - dashcam
+      - video-safety
+    - name: Clarity Edge
+      keywords:
+      - Clarity
+      - Clarity Edge
+      - clarity-edge
+      - dashcam
+      - fatigue
+      - video-safety
+    - name: Clarity Edge Multi-Cam
+      keywords:
+      - clarity-edge-multicam
+      - video-safety
+    - name: Video Replay Portal
+      keywords:
+      - dashcam
+      - replay
+      - video-replay
+    - name: Fatigue Monitoring Service
+      keywords:
+      - fatigue
+      - fatigue-monitoring
+      - video-safety
+    - name: Seat Shaker
+      keywords:
+      - fatigue
+      - seat-shaker
+    - name: Dashcam Event Notifications
+      keywords:
+      - dashcam-notifications
+  - name: Driver Behaviour
+    components:
+    - name: Drive Buddy Fatigue
+      keywords:
+      - drive-buddy
+      - driver-performance
+      - fatigue
+    - name: Driver Scoring
+      keywords:
+      - driver scoring
+      - driver-performance
+      - driver-scoring
+    - name: Driver Coaching
+      keywords:
+      - driver-coaching
+      - driver-performance
+    - name: Driver Leaderboard
+      keywords:
+      - driver leaderboard
+      - driver-leaderboard
+      - driver-performance
+    - name: Driver Overspeed
+      keywords:
+      - driver-performance
+      - overspeed
+    - name: Driver Safety Profile
+      keywords:
+      - driver-performance
+      - driver-safety-profile
+      - safety profile
+  - name: Incident Detection and Response
+    components:
+    - name: Collision and Rollover Alerts (CARA)
+      keywords:
+      - CARA
+      - collision
+      - incident
+      - rollover
+- name: Compliance
+  features:
+  - name: Electronic Logging (Hours of Service — NA)
+    components:
+    - name: ELD for MyEROAD
+      keywords:
+      - DIME
+      - ELD
+      - HOS
+      - dime
+      - myeroad
+    - name: ELD for 360
+      keywords:
+      - '360'
+      - DIME
+      - ELD
+      - HOS
+    - name: Pre-Pass Integration
+      keywords:
+      - pre-pass
+      - weigh-station
+  - name: Fatigue Regulation (ANZ)
+    components:
+    - name: Electronic Work Diary
+      keywords:
+      - AU
+      - EWD
+      - fatigue
+      - fatigue-regulation
+    - name: Electronic Logbook
+      keywords:
+      - ELB
+      - NZ
+      - fatigue
+      - fatigue-regulation
+      - logbook
+  - name: Dispatch and Proof of Service
+    components:
+    - name: Route Manager
+      keywords:
+      - Route Manager
+      - dispatch
+      - route-manager
+      - sysco
+    - name: Route Inspector
+      keywords:
+      - dispatch
+      - route-inspector
+    - name: Proof of Service (ePOD)
+      keywords:
+      - dispatch
+      - ePOD
+      - proof-of-service
+  - name: Vehicle Inspection and Environmental Compliance
+    components:
+    - name: DVIR
+      keywords:
+      - DVIR
+      - inspection
+      - pre-trip
+    - name: EROAD Inspect
+      keywords:
+      - Inspect
+      - hired-asset
+      - inspect
+      - inspection
+    - name: CARB Compliance
+      keywords:
+      - CARB
+      - compliance
+      - emissions
+- name: Tax
+  features:
+  - name: Road User Charging (ANZ)
+    components:
+    - name: Road User Charges
+      keywords:
+      - NZ
+      - RUC
+      - road-user-charges
+    - name: eRUC B2C
+      keywords:
+      - B2C
+      - RUC
+      - eRUC
+      - mobile
+    - name: EDR Manager
+      keywords:
+      - EDR
+      - RUC
+      - distance-recorder
+    - name: RUC Label Printing
+      keywords:
+      - RUC-labels
+  - name: Weight and Distance Tax (NA)
+    components:
+    - name: Oregon Weight Mile Tax
+      keywords:
+      - NA
+      - OWMT
+      - weight-mile-tax
+    - name: Road Use Assessment Fee
+      keywords:
+      - RUAF
+    - name: International Registration Plan
+      keywords:
+      - IRP
+      - registration
+  - name: Fuel and Benefits Tax
+    components:
+    - name: Fuel Tax Credit
+      keywords:
+      - AU
+      - FTC
+      - fuel-tax
+    - name: Fringe Benefits Tax
+      keywords:
+      - AU
+      - FBT
+      - fringe-benefits
+    - name: International Fuel Tax Agreement
+      keywords:
+      - IFTA
+      - NA
+      - fuel-tax
+    - name: Fuel Card Integrations
+      keywords:
+      - fuel-card
+  - name: Vehicle Sharing
+    components:
+    - name: BookIt Car Sharing
+      keywords:
+      - BookIt
+      - bookit
+      - car-sharing
+      - vehicle-sharing
+- name: Cold Chain
+  features:
+  - name: Refrigerated Load Management
+    components:
+    - name: CoreTemp
+      keywords:
+      - CoreTemp
+      - cold-chain
+      - coretemp
+      - reefer
+      - temperature
+    - name: Reefer Management
+      keywords:
+      - cold-chain
+      - reefer
+      - reefer-management
+    - name: Reefer Reports and Dashboards
+      keywords:
+      - cold-chain
+      - reefer-reports
+    - name: Reefer Alerts
+      keywords:
+      - cold-chain
+      - reefer-alerts
+    - name: Reefer Trailer CARB Reporting
+      keywords:
+      - CARB
+      - cold-chain
+      - reefer-CARB
+    - name: Reefer on Map
+      keywords:
+      - cold-chain
+      - reefer-map
+    - name: Reefer API
+      keywords:
+      - cold-chain
+      - reefer-api
+    - name: Reefer Mobile Experience
+      keywords:
+      - cold-chain
+      - reefer-mobile
+    - name: Reefer Settings Management
+      keywords:
+      - cold-chain
+      - reefer-settings
+    - name: Electric Reefer Solutions
+      keywords:
+      - EV
+      - cold-chain
+      - reefer-electric
+    - name: PCT and Dry
+      keywords:
+      - PCT
+      - cold-chain
+- name: Geospatial
+  features:
+  - name: Geocoding and Spatial Enrichment
+    components:
+    - name: Geographic Service V1
+      keywords:
+      - geo v1
+      - geo-v1
+      - geocoding
+      - geospatial
+    - name: Geographic Service V3
+      keywords:
+      - HERE
+      - geo v3
+      - geo-v3
+      - geocoding
+      - geospatial
+    - name: PTV Integration
+      keywords:
+      - GIS
+      - PTV
+      - geocoding
+  - name: Geofencing and Location Management
+    components:
+    - name: Geofence Backend Service
+      keywords:
+      - geofence
+      - geofencing
+      - geospatial
+    - name: Location Management and Enrichments
+      keywords:
+      - geofence
+      - location-management
+  - name: Navigation and Routing
+    components:
+    - name: EROAD Navigation
+      keywords:
+      - eroad-nav
+      - navigation
+      - routing
+    - name: CoPilot
+      keywords:
+      - CoPilot
+      - copilot
+      - navigation
+- name: Fleet Intelligence
+  features:
+  - name: Fleet Utilisation and Reporting
+    components:
+    - name: Fleet Utilisation
+      keywords:
+      - fleet utilisation
+      - fleet-intelligence
+      - fleet-utilisation
+    - name: Fleet Insights Reporting
+      keywords:
+      - fleet-insights
+      - reporting
+    - name: Common Telematics and Entity Reports
+      keywords:
+      - common-reports
+      - telematics-reports
+  - name: Fuel and Energy Performance
+    components:
+    - name: Fuel and Energy Economy Reporting
+      keywords:
+      - energy-reporting
+      - fuel-economy
+  - name: Sustainability and Emissions
+    components:
+    - name: Sustainability Module
+      keywords:
+      - emissions
+      - sustainability
+    - name: Decarb Emissions Reporting
+      keywords:
+      - decarb
+      - emissions
+      - sustainability
+  - name: Vehicle Maintenance
+    components:
+    - name: Service and Maintenance Module
+      keywords:
+      - maintenance
+      - service-module
+      - vehicle-health
+    - name: Service Manager (360)
+      keywords:
+      - '360'
+      - maintenance
+      - service-manager
+- name: Customer
+  features:
+  - name: Organisation and Account Management
+    components:
+    - name: User Management
+      keywords:
+      - BOX
+      - LMT
+      - user-management
+    - name: Organisation Switcher
+      keywords:
+      - org-switcher
+    - name: Bulk Import Tools
+      keywords:
+      - bulk-import
+- name: Person
+  features:
+  - name: Driver and Operative Management
+    components:
+    - name: Driver Management V1
+      keywords:
+      - BOX
+      - DFT
+      - driver management
+      - driver-management
+    - name: Driver Management V2
+      keywords:
+      - BOX
+      - driver management
+      - driver-management-v2
+    - name: Driver Health Reporting
+      keywords:
+      - driver-health
+    - name: Competency Register
+      keywords:
+      - competency-register
+- name: Asset
+  features:
+  - name: Vehicle and Fleet Management
+    components:
+    - name: Vehicle Management
+      keywords:
+      - BOX
+      - VMT
+      - vehicle management
+      - vehicle-management
+    - name: Vehicle Device Health Reporting
+      keywords:
+      - TELE
+      - VMT
+      - device-health
+      - vehicle-health
+    - name: Entity Attributes
+      keywords:
+      - entity-attributes
+      - vehicle-attributes
+    - name: Trailer Management
+      keywords:
+      - trailer
+      - trailer-management
+    - name: Vehicle Share Manager
+      keywords:
+      - vehicle-share
+- name: Identity
+  features:
+  - name: Authentication and Access Control
+    components:
+    - name: Authentication, SSO, MFA
+      keywords:
+      - MFA
+      - SSO
+      - authentication
+      - cognito
+    - name: Impersonation and IAC
+      keywords:
+      - IAC
+      - impersonation
+- name: Entitlements and Associations
+  features:
+  - name: Entitlements and Sharing
+    components:
+    - name: EROAD Share
+      keywords:
+      - eroad-share
+      - sharing
+- name: Notification
+  features:
+  - name: Outbound Notifications and Messaging
+    components:
+    - name: Notification and Alerts
+      keywords:
+      - alerts
+      - notification
+      - notifications
+    - name: Email Notification Engine
+      keywords:
+      - email-notification
+    - name: Vehicle Messaging
+      keywords:
+      - messaging
+      - vehicle-messaging
+- name: Device and Connectivity
+  features:
+  - name: In-Vehicle Hardware
+    components:
+    - name: EHUBO 2
+      keywords:
+      - EHUBO
+      - EHUBO2
+      - device
+      - hardware
+  - name: Trailer and Asset Connectivity
+    components:
+    - name: CoreHub Standard and Xtreme
+      keywords:
+      - CoreHub
+      - corehub
+      - trailer-connectivity
+    - name: CoreHub Trailer
+      keywords:
+      - corehub-trailer
+    - name: Sensors Suite
+      keywords:
+      - IOTag
+      - door-sensor
+      - lift-sensor
+      - sensors
+    - name: Trailer CAN and ABS
+      keywords:
+      - ABS
+      - BLE
+      - trailer-CAN
+    - name: Trailer Sensor UX
+      keywords:
+      - sensor-ux
+      - trailer-sensors
+  - name: Device Operations
+    components:
+    - name: CoreHub Installer App
+      keywords:
+      - corehub-installer
+      - installer-app
+    - name: CoreHub Support Panel
+      keywords:
+      - corehub-support
+      - support-panel
+  - name: Telemetry Ingestion
+    components:
+    - name: 360 Ingestion Pipeline
+      keywords:
+      - 360-ingestion
+      - atom
+      - communicators
+      - ingestion
+      - message-service
+    - name: MyEROAD Ingestion Pipeline
+      keywords:
+      - ESP
+      - central-service
+      - event-api
+      - ingestion
+      - myeroad-ingestion
+    - name: Consolidation V1
+      keywords:
+      - consolidation
+      - consolidation-v1
+      - dbdepot
+    - name: Consolidation V2
+      keywords:
+      - consolidation
+      - consolidation-v2
+    - name: Customer Event Forwarder
+      keywords:
+      - event-forwarder
+      - event-hub
+      - kinesis
+  - name: Connected Vehicle
+    components:
+    - name: Operational EV Data
+      keywords:
+      - CAN
+      - EV-data
+      - SOC
+    - name: CANBUS Data and Smart Rules
+      keywords:
+      - CAN
+      - CANBUS
+      - smart-rules
+  - name: OEM Hardware Integration
+    components:
+    - name: Reefer OEM Integrations
+      keywords:
+      - Carrier
+      - OEM
+      - TK
+      - reefer-OEM
+- name: Data and Integration
+  features:
+  - name: Customer Data Sharing
+    components:
+    - name: Customer Integrations Portal
+      keywords:
+      - CIP
+      - azure-aks
+      - customer-integration
+    - name: data_integration-sharing-sysco_cip
+    - name: data_integration-sharing-partner_gateway
+    - name: data_integration-sharing-myeroad_share
+    - name: data_integration-sharing-eroad_analyst
+    - name: data_integration-sharing-360_edc
+      keywords:
+      - EDC
+    - name: Partner APIs
+      keywords:
+      - partner-api
+      - public-api
+    - name: data_integration-sharing-event_hub
+    - name: data_integration-sharing-ecp_exchange
+    - name: data_integration-sharing-legacy_apis
+    - name: data_integration-sharing-apigee
+    - name: Geotab Integration
+      keywords:
+      - Geotab
+      - geotab
+      - partner-integration
+    - name: data_integration-sharing-transtech
+  - name: Operational Data Stores
+    components:
+    - name: 360 Databases
+      keywords:
+      - 360-databases
+      - SQL-MI
+      - database
+  - name: Analytics Infrastructure
+    components:
+    - name: Reporting and Analytics Platform
+      keywords:
+      - PowerBI
+      - analytics
+      - reporting-platform
+- name: Platform
+  features:
+  - name: Cloud Infrastructure
+    components:
+    - name: AWS Platform
+      keywords:
+      - AWS
+      - infrastructure
+    - name: Azure Platform
+      keywords:
+      - AKS
+      - Azure
+      - infrastructure
+    - name: platform-infrastructure-iac
+  - name: Developer Platform
+    components:
+    - name: platform-developer-cicd
+    - name: Web Foundations
+      keywords:
+      - component-library
+      - frontend
+      - web-foundations
+    - name: Mobile Foundations
+      keywords:
+      - mobile-foundations
+      - mobile-platform
+    - name: Driver Mobile Platform
+      keywords:
+      - Drive
+      - driver-mobile
+      - mobile-platform
+    - name: platform-developer-fleet_mobile
+    - name: platform-developer-qa
+    - name: platform-developer-ai
+    - name: platform-developer-site_nav
+  - name: Operations and Support Tooling
+    components:
+    - name: platform-operations-outage
+    - name: platform-operations-support

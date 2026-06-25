@@ -64,7 +64,8 @@ _GET_DOCUMENTS_BY_PRODUCT = text("""
 _DELETE_PRODUCT_EXPERT = text("""
     DELETE FROM product_experts
     WHERE product = :product
-      AND ((:component IS NULL AND component IS NULL) OR component = :component)
+      AND ((CAST(:component AS text) IS NULL AND component IS NULL)
+           OR component = CAST(:component AS text))
 """)
 
 _INSERT_PRODUCT_EXPERT = text("""
@@ -92,7 +93,8 @@ _GET_PRODUCT_EXPERT = text("""
            generated_at, updated_at
     FROM product_experts
     WHERE product = :product
-      AND ((:component IS NULL AND component IS NULL) OR component = :component)
+      AND ((CAST(:component AS text) IS NULL AND component IS NULL)
+           OR component = CAST(:component AS text))
     LIMIT 1
 """)
 
