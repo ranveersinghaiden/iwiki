@@ -1,87 +1,92 @@
 # iWiki — Internal Knowledge Search Platform
 
-RAG-based search over Jira + Confluence.  
-Hybrid vector + FTS search → LLM-generated answers with citations.
-
----
+RAG-based search over **Confluence + Jira**. Content is ingested into
+**Postgres + pgvector**, classified against a **product taxonomy**, and answered
+with an LLM over **hybrid retrieval (full-text + vector) with reranking** —
+returning grounded answers with citations. Runs fully **local/offline with
+Ollama**, or against **OpenAI**.
 
 ## Documentation
 
 | Document | Purpose |
 |----------|---------|
-| **[ARCHITECTURE.md](ARCHITECTURE.md)** | System design, data model, pipeline flows, performance, deployment, and troubleshooting guide |
-| **[README.md](README.md)** | (This file) Quick start, environment variables, API reference, local development setup |
-
-> **Archived:** [TESTING.md](TESTING.md) and [POSTGRES.md](POSTGRES.md) content consolidated into ARCHITECTURE.md § Troubleshooting and README.md § Local Development.
+| **README.md** (this file) | Quick start, environment variables, API reference, local development |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Authoritative system design: data model, pipelines, classifier, reranker, product experts, configuration behaviour, security, troubleshooting |
+| [POSTGRES.md](POSTGRES.md) | Postgres access, connection methods, index/embedding-dimension operations, backup/restore |
+| [TESTING.md](TESTING.md) | Manual end-to-end test procedures |
 
 ---
 
-## Architecture
+## Architecture at a glance
 
 ```
-Jira / Confluence
-  → ingestion-service (fetch → clean → chunk → embed → classify → upsert)
-  → PostgreSQL + pgvector
-  ← query-service (embed query → hybrid search → RRF → LLM RAG → answer + citations)
+Confluence / Jira
+  → ingestion-service  (fetch → clean → chunk → embed → classify → upsert; refresh experts)
+  → PostgreSQL + pgvector  (documents · chunks · sync_state · product_experts)
+  ← query-service  (embed → hybrid FTS+vector → RRF → rerank → LLM RAG → answer + citations)
 ```
 
 | Service | Port | Role |
 |---------|------|------|
-| `ingestion-service` | 8090 | Fetch, chunk, embed, index |
-| `query-service` | 8091 | Natural-language query + RAG answer |
-| `db` (Postgres 16 + pgvector) | 5432 | Vector + FTS + metadata storage |
+| `ingestion-service` | 8090 | Fetch, clean, chunk, embed, classify, index; synthesise product experts; schedule incremental syncs |
+| `query-service` | 8091 | Natural-language query → retrieval + rerank + RAG answer; serve product experts |
+| `db` (pgvector/pgvector:pg16) | 5432 | Vector + full-text + metadata storage |
+
+Full design — including the 3-stage classifier and the reranker — is in
+[ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
 ## Quick Start
 
 ### 1. Configure
-
 ```bash
 cp .env.example .env
-# Edit .env — fill in all credentials
+# Edit .env: set POSTGRES_PASSWORD, ADMIN_API_KEY, Jira/Confluence credentials,
+# and choose an AI provider block (Ollama local or OpenAI).
 ```
 
-### 2. Start everything
+**Choose your AI provider** (see [`.env.example`](.env.example) for both blocks):
+- **Ollama (local, default)** — matches the shipped `vector(768)` schema. Pull
+  the models first: `ollama pull nomic-embed-text && ollama pull llama3.2:3b`.
+- **OpenAI** — set `EMBEDDING_MODEL=text-embedding-3-small`, `EMBEDDING_DIM=1536`,
+  and migrate the embedding column to `vector(1536)` (see
+  [POSTGRES.md](POSTGRES.md#switching-embedding-dimension)). The embedding
+  dimension **must** match the DB column — see
+  [ARCHITECTURE.md § embedding-dimension contract](ARCHITECTURE.md#embedding-dimension-is-a-configuration-contract).
 
+### 2. Start everything
 ```bash
 docker compose up -d
 ```
 
-### 3. Run full initial sync
-
+### 3. Run the initial full sync (admin-gated)
 ```bash
 curl -X POST http://localhost:8090/api/v1/ingest/sync/full \
-     -H "X-Admin-Key: your_strong_admin_key_here"
+  -H "X-Admin-Key: your_strong_admin_key_here"
+# → 202 {"status":"accepted","sync_type":"full","triggered_at":"…"}
 ```
+Watch progress: `docker compose logs -f ingestion-service`. Product experts are
+synthesised automatically when the sync completes.
 
-Watch logs: `docker compose logs -f ingestion-service`
-
-### 4. Query
-
+### 4. Ask a question
 ```bash
 curl -X POST http://localhost:8091/api/v1/query \
-     -H "Content-Type: application/json" \
-     -d '{"query": "How does the payment gateway handle 3DS2?"}'
+  -H "Content-Type: application/json" \
+  -d '{"query": "How does Clarity Dashcam handle fatigue detection?", "top_k": 8}'
 ```
-
-Response:
 ```json
 {
-  "answer": "According to the Payments documentation...",
+  "answer": "…grounded answer with [N] citations…",
   "sources": [
-    {
-      "title": "[PAY-123] 3DS2 implementation",
-      "source_type": "jira",
-      "source_id": "PAY-123",
-      "source_url": "https://your-org.atlassian.net/browse/PAY-123",
-      "product_hierarchy": {"product": "Payments", "feature": "Checkout"},
-      "relevance_score": 0.0321
-    }
+    { "title": "…", "source_type": "confluence", "source_id": "12345",
+      "source_url": "https://…",
+      "product_hierarchy": { "product": "Safety", "feature": "Video Telematics", "component": "Clarity Dashcam" },
+      "relevance_score": 0.83 }
   ],
-  "query": "How does the payment gateway handle 3DS2?",
-  "chunks_retrieved": 5,
-  "model_used": "gpt-4o-mini"
+  "query": "…",
+  "chunks_retrieved": 8,
+  "model_used": "llama3.2:3b"
 }
 ```
 
@@ -89,152 +94,179 @@ Response:
 
 ## Environment Variables
 
+This is the **complete reference**. The literal annotated file with both provider
+blocks is [`.env.example`](.env.example); for how these knobs affect behaviour
+see [ARCHITECTURE.md § Configuration](ARCHITECTURE.md#configuration). `case_sensitive`
+is off, so names may be set in any case; UPPER_SNAKE shown by convention.
+
+### PostgreSQL & services
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `POSTGRES_USER` | optional | `iwiki` | DB user (docker-compose) |
+| `POSTGRES_PASSWORD` | ✅ | — | DB password (docker-compose) |
+| `POSTGRES_DB` | optional | `iwiki` | DB name (docker-compose) |
+| `POSTGRES_PORT` | optional | `5432` | Published DB port |
+| `DATABASE_URL` | ✅ | `…@localhost:5432/iwiki` | Async DSN (`postgresql+asyncpg://…`). **docker-compose overrides this to host `db`**; set localhost for host-run services |
+| `INGESTION_PORT` / `QUERY_PORT` | optional | `8090` / `8091` | Published service ports |
+
+### Admin auth
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `POSTGRES_PASSWORD` | ✅ | Postgres password |
-| `JIRA_BASE_URL` | ✅ | `https://your-org.atlassian.net` |
-| `JIRA_USER_EMAIL` | ✅ | Jira account email |
-| `JIRA_API_TOKEN` | ✅ | Jira API token (Atlassian account settings) |
-| `JIRA_PROJECTS` | ✅ | Comma-separated project keys, e.g. `PROJ1,PROJ2` |
-| `CONFLUENCE_BASE_URL` | ✅ | Usually same as `JIRA_BASE_URL` |
-| `CONFLUENCE_API_TOKEN` | ✅ | Confluence API token |
-| `CONFLUENCE_SPACES` | ✅ | Comma-separated space keys |
-| `OPENAI_API_KEY` | ✅ | OpenAI API key (or leave blank if using Ollama) |
-| `ADMIN_API_KEY` | ✅ | Secret key for admin endpoints |
-| `EMBEDDING_MODEL` | optional | Default: `text-embedding-3-small` (1536 dim) |
-| `EMBEDDING_DIM` | optional | Default: `1536` — must match model output dim |
-| `LLM_MODEL` | optional | Default: `gpt-4o-mini` |
-| `OLLAMA_BASE_URL` | optional | Set to use local Ollama, e.g. `http://ollama:11434/v1` |
-| `SYNC_CRON` | optional | Default: `0 * * * *` (every hour) |
+| `ADMIN_API_KEY` | ✅ | Secret for the `X-Admin-Key` header on all ingestion mutating endpoints. Blank → those endpoints return 503 |
+
+### Sources — Jira & Confluence
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `JIRA_BASE_URL` | ✅* | — | `https://your-org.atlassian.net` |
+| `JIRA_USER_EMAIL` | ✅* | — | Atlassian account email |
+| `JIRA_API_TOKEN` | ✅* | — | Jira API token |
+| `JIRA_PROJECTS` | ✅* | — | Comma-separated project keys; blank skips Jira |
+| `JIRA_PAGE_SIZE` | optional | `100` | Results per Jira page request |
+| `CONFLUENCE_BASE_URL` | ✅* | — | Usually same host as Jira |
+| `CONFLUENCE_API_TOKEN` | ✅* | — | Confluence API token |
+| `CONFLUENCE_SPACES` | ✅* | — | Comma-separated space keys; blank skips Confluence |
+| `CONFLUENCE_PAGE_SIZE` | optional | `50` | Results per Confluence page request |
+
+\* Required only for the source you intend to index.
+
+### AI provider (set ONE block — see [`.env.example`](.env.example))
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `OPENAI_API_KEY` | ✅ | — | OpenAI key, or any non-empty dummy for Ollama |
+| `OLLAMA_BASE_URL` | optional | unset | Set → route to local Ollama (`http://localhost:11434/v1`; Docker: `http://host.docker.internal:11434/v1`). Unset → OpenAI |
+| `EMBEDDING_MODEL` | optional | `text-embedding-3-small` | `nomic-embed-text` (768) for Ollama; `text-embedding-3-small` (1536) for OpenAI |
+| `EMBEDDING_DIM` | optional | `1536` | **Advisory.** Must equal the model output **and** `chunks.embedding vector(N)` (shipped: 768). Changing it alone does nothing — also `ALTER` the column |
+| `LLM_MODEL` | optional | `gpt-4o-mini` | Chat model for classify/answer/rerank (`llama3.2:3b` for Ollama) |
+
+> The shipped schema is `vector(768)` (Ollama `nomic-embed-text`). For OpenAI
+> 1536-dim embeddings, migrate the column — see [POSTGRES.md](POSTGRES.md#switching-embedding-dimension).
+
+### Ingestion tuning
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CHUNK_SIZE` | `512` | Tokens per chunk |
+| `CHUNK_OVERLAP` | `64` | Token overlap between chunks |
+| `EMBEDDING_BATCH_SIZE` | `32` | Texts per embedding API call |
+| `SYNC_CRON` | `0 * * * *` | 5-part cron for automatic incremental sync (default hourly) |
+
+### Classification (taxonomy + cascade)
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `HIERARCHY_CONFIG_PATH` | `product_hierarchy.yaml` | Taxonomy YAML the classifier loads (mounted into the ingestion container) |
+| `CLASSIFICATION_RULE_MIN_SCORE` | `3.0` | Min keyword score for the rule stage |
+| `CLASSIFICATION_SEMANTIC_FALLBACK` | `true` | Run the embedding-similarity stage when rules miss |
+| `CLASSIFICATION_SEMANTIC_THRESHOLD` | `0.45` | Min cosine similarity to accept a semantic match |
+| `CLASSIFICATION_REVIEW_THRESHOLD` | `0.5` | Below this confidence → `needs_review` |
+
+### Retrieval & reranking (query-service)
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SEARCH_CANDIDATE_LIMIT` | `20` | Candidates pulled from each of the vector + FTS legs |
+| `TOP_K_RESULTS` | `8` | Default chunks passed to the LLM (request `top_k` overrides, 1–20) |
+| `MAX_QUERY_LENGTH` | `4096` | Max characters in a user query |
+| `RERANK_ENABLED` | `true` | Master switch for the signal-blend rerank |
+| `RERANK_CANDIDATE_POOL` | `20` | Pool size pulled before reranking |
+| `RERANK_WEIGHT_RRF` | `0.55` | Weight: normalised RRF fusion score |
+| `RERANK_WEIGHT_FRESHNESS` | `0.15` | Weight: recency decay |
+| `RERANK_WEIGHT_AUTHORITY` | `0.15` | Weight: source authority |
+| `RERANK_WEIGHT_TAXONOMY` | `0.15` | Weight: query↔taxonomy match |
+| `RERANK_FRESHNESS_HALF_LIFE_DAYS` | `180` | Freshness exponential-decay half-life |
+| `RERANK_AUTHORITY_CONFLUENCE` | `1.0` | Authority weight for Confluence |
+| `RERANK_AUTHORITY_JIRA` | `0.7` | Authority weight for Jira |
+| `RERANK_AUTHORITY_DEFAULT` | `0.6` | Authority weight for other sources |
+| `RERANK_LLM_ENABLED` | `true` | Optional LLM rerank of the top-N (degrades gracefully) |
+| `RERANK_LLM_TOP_N` | `10` | How many blended candidates the LLM reranks |
 
 ---
 
-## Using a Different Embedding Model
+## API Reference
 
-If you switch to a **768-dimension** model (e.g. `nomic-embed-text` via Ollama):
+Both services serve under `/api/v1`. Interactive docs: `/docs` on each port.
 
-1. Set `EMBEDDING_MODEL=nomic-embed-text` and `EMBEDDING_DIM=768` in `.env`
-2. Update the DB column before first sync:
+### Ingestion service (`:8090`) — mutating endpoints require `X-Admin-Key`
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/v1/ingest/sync/full` | admin | Full re-index of all configured sources → `202` |
+| `POST` | `/api/v1/ingest/sync/incremental` | admin | Sync only items updated since the watermark → `202` |
+| `POST` | `/api/v1/ingest/document` | admin | Index one inline document through the full pipeline → `201` |
+| `POST` | `/api/v1/experts/refresh` | admin | Re-synthesise all product experts → `202` |
+| `GET` | `/api/v1/ingest/status` | admin | Per-source sync state (`sync_states`) |
+| `GET` | `/api/v1/health` | open | `{"status":"ok"}` |
 
-```sql
-ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(768);
-DROP INDEX idx_chunks_embedding;
-CREATE INDEX idx_chunks_embedding ON chunks
-    USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
-```
+Wrong/missing admin key → **401**; server with no `ADMIN_API_KEY` → **503**.
 
----
-
-## Ingestion API (requires `X-Admin-Key` header)
-
+### Query service (`:8091`)
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/v1/ingest/sync/full` | Full re-index of all sources |
-| `POST` | `/api/v1/ingest/sync/incremental` | Sync only items updated since last run |
-| `GET` | `/api/v1/ingest/status` | Show sync state + watermarks |
+| `POST` | `/api/v1/query` | Ask a question → answer + cited sources |
+| `GET` | `/api/v1/experts` | List all product experts |
+| `GET` | `/api/v1/experts/{product}` | Expert(s) for a product (optional `?component=`); `404` if none |
+| `GET` | `/api/v1/health` | `{"status":"ok"}` |
 
----
-
-## Query API
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/v1/query` | Ask a question, get answer + citations |
-| `GET` | `/api/v1/health` | Health check |
-
-### Optional query headers (permission filtering)
+**`POST /api/v1/query`** body: `{"query": "<text>", "top_k": <1-20, default 8>}`.
+Optional permission headers (trusted as supplied — enforce identity upstream):
 
 | Header | Example | Effect |
 |--------|---------|--------|
-| `X-Allowed-Spaces` | `SPACE1,SPACE2` | Restrict to Confluence spaces |
-| `X-Allowed-Projects` | `PROJ1,PROJ2` | Restrict to Jira projects |
-| `X-Product-Filter` | `Payments` | Restrict to one product (from hierarchy) |
+| `X-Allowed-Spaces` | `EN,DEV` | Restrict to those Confluence spaces |
+| `X-Allowed-Projects` | `PROJ1,PROJ2` | Restrict to those Jira projects |
+| `X-Product-Filter` | `Safety` | Restrict to one product (from the hierarchy) |
+
+Response fields: `answer`, `sources[]` (`title`, `source_type`, `source_id`,
+`source_url`, `product_hierarchy`, `relevance_score`), `query`,
+`chunks_retrieved`, `model_used`.
 
 ---
 
 ## Product Hierarchy
 
-Edit `product_hierarchy.yaml` to match your product structure before first sync.  
-The ingestion service mounts this file at `/app/product_hierarchy.yaml` in Docker.  
-After editing, re-trigger a full sync to reclassify all documents.
+Every document is classified to `product → feature → component` via a 3-stage
+cascade (rule → semantic → LLM) — see
+[ARCHITECTURE.md § Classification](ARCHITECTURE.md#classification--hybrid-3-stage-cascade).
+
+- Default sample taxonomy: [`product_hierarchy.yaml`](product_hierarchy.yaml).
+- Committed EROAD taxonomy: [`product_hierarchy.eroad.yaml`](product_hierarchy.eroad.yaml)
+  (generated from `.agents/knowledge/product-map.json`).
+
+Point `HIERARCHY_CONFIG_PATH` at the file you want (or replace the file mounted
+by docker-compose), then run a **full sync** to reclassify everything.
 
 ---
 
-## Incremental Sync
+## Local Development
 
-Incremental sync runs automatically on the `SYNC_CRON` schedule (default: hourly).  
-It fetches only items with `updated_at > last_synced_at` from each source.  
-Trigger manually:
-
-```bash
-curl -X POST http://localhost:8090/api/v1/ingest/sync/incremental \
-     -H "X-Admin-Key: your_admin_key"
-```
-
----
-
-## Local Development (without Docker)
-
-Three terminals:
+Run Postgres in Docker and the services on the host with hot reload. Detailed
+Postgres setup/connection options are in [POSTGRES.md](POSTGRES.md).
 
 ```bash
-# Terminal 1 — Postgres (or: docker compose up -d db)
-docker run -p 5432:5432 \
-  -e POSTGRES_USER=iwiki -e POSTGRES_PASSWORD=iwiki -e POSTGRES_DB=iwiki \
-  -v $(pwd)/db/init.sql:/docker-entrypoint-initdb.d/init.sql \
-  pgvector/pgvector:pg16
+# 1. Start Postgres only
+docker compose up -d db
+until docker compose exec db pg_isready -U iwiki -d iwiki >/dev/null 2>&1; do sleep 1; done
 
-# Terminal 2 — ingestion-service
-cd ingestion-service
-python -m venv .venv && source .venv/bin/activate
+# 2. In .env, point DATABASE_URL at localhost:
+#    DATABASE_URL=postgresql+asyncpg://iwiki:<password>@localhost:5432/iwiki
+
+# 3. ingestion-service (terminal A)
+cd ingestion-service && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp ../.env.example .env  # edit credentials
 uvicorn main:app --port 8090 --reload
 
-# Terminal 3 — query-service
-cd query-service
-python -m venv .venv && source .venv/bin/activate
+# 4. query-service (terminal B)
+cd query-service && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp ../.env.example .env
 uvicorn main:app --port 8091 --reload
 ```
 
-### Database Connection Methods
+> `tiktoken` is optional (needs Rust); without it the chunker falls back to a
+> word-based approximation. Everything else is pure-Python.
 
-| Scenario | Command | Notes |
-|----------|---------|-------|
-| Postgres in Docker (compose) | `docker compose up -d db` | Easiest for local dev |
-| Postgres standalone | `docker run ... pgvector/pgvector:pg16` | Full control, more manual setup |
-| psql CLI (from container) | `docker compose exec db psql -U iwiki -d iwiki` | Direct SQL access |
-| psql CLI (from host) | `psql postgresql://iwiki:iwiki@localhost:5432/iwiki` | Requires `psql` installed locally |
-| GUI tools (DBeaver, DataGrip) | Connect to `localhost:5432` user `iwiki` password `iwiki` | Visual exploration |
+For manual test procedures (sync, query, classification, experts, error cases),
+see [TESTING.md](TESTING.md).
 
-### Postgres Connection String
+---
 
-```
-postgresql://[user]:[password]@[host]:[port]/[database]
-postgresql://iwiki:iwiki@localhost:5432/iwiki
-```
+## Verified end-to-end
 
-For async Python (FastAPI):
-```
-postgresql+asyncpg://iwiki:iwiki@localhost:5432/iwiki
-```
-
-### Quick Database Checks
-
-```bash
-# Connect to Postgres
-docker compose exec db psql -U iwiki -d iwiki
-
-# Inside psql:
-SELECT COUNT(*) FROM chunks;                    -- total chunks
-SELECT dimensions(embedding) FROM chunks LIMIT 1;  -- verify vector dim (should match EMBEDDING_DIM)
-SELECT * FROM pg_stat_user_indexes LIMIT 5;    -- index health
-\q  -- exit
-```
-
-**Full setup walkthrough:** See [ARCHITECTURE.md](ARCHITECTURE.md) § Deployment Architecture
-
-**Complete POSTGRES.md reference (backup/restore, tuning, connection methods, troubleshooting):** See archived [POSTGRES.md](POSTGRES.md)
-
+Validated against the EROAD Confluence space **`EN`**: 50 pages → 47 documents,
+103 chunks (768-dim), 11 products classified (21 rule + 26 semantic), 11 product
+experts synthesised, and a sample query returned a grounded, cited answer.
