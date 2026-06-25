@@ -1,6 +1,5 @@
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS vector;
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ─── documents ────────────────────────────────────────────────────────────────
 -- One row per Jira ticket or Confluence page (source of truth link preserved).
@@ -18,6 +17,8 @@ CREATE TABLE IF NOT EXISTS documents (
     allowed_spaces      TEXT[]      NOT NULL DEFAULT '{}',
     allowed_projects    TEXT[]      NOT NULL DEFAULT '{}',
     -- product hierarchy classification result
+    -- keys: product, feature, component, confidence (0-1), method
+    --       (rule|semantic|llm|fallback), needs_review (bool)
     product_hierarchy   JSONB       NOT NULL DEFAULT '{}',
     indexed_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     source_updated_at   TIMESTAMPTZ,

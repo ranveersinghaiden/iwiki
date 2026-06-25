@@ -30,6 +30,26 @@ class Settings(BaseSettings):
     # Maximum characters in a user query
     max_query_length: int = 4096
 
+    # ── Reranking ─────────────────────────────────────────────────────────────
+    # Master switch for the signal-blend reranking stage.
+    rerank_enabled: bool = True
+    # Size of the candidate pool pulled from hybrid search before reranking.
+    rerank_candidate_pool: int = 20
+    # Blend weights (relative; normalised internally). RRF dominates by default.
+    rerank_weight_rrf: float = 0.55
+    rerank_weight_freshness: float = 0.15
+    rerank_weight_authority: float = 0.15
+    rerank_weight_taxonomy: float = 0.15
+    # Half-life (days) for the freshness exponential decay.
+    rerank_freshness_half_life_days: float = 180.0
+    # Per-source authority weights (0-1).
+    rerank_authority_confluence: float = 1.0
+    rerank_authority_jira: float = 0.7
+    rerank_authority_default: float = 0.6
+    # Optional LLM rerank stage applied to the top-N blended candidates.
+    rerank_llm_enabled: bool = True
+    rerank_llm_top_n: int = 10
+
     @property
     def ai_base_url(self) -> Optional[str]:
         return self.ollama_base_url or None

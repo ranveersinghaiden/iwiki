@@ -54,6 +54,16 @@ class Settings(BaseSettings):
     # ── Hierarchy ─────────────────────────────────────────────────────────────
     hierarchy_config_path: str = "product_hierarchy.yaml"
 
+    # ── Classification cascade (rule → semantic → LLM) ────────────────────────
+    # Minimum keyword score for the deterministic rule stage to accept a match.
+    classification_rule_min_score: float = 3.0
+    # Run the embedding-similarity stage when rules are inconclusive.
+    classification_semantic_fallback: bool = True
+    # Minimum cosine similarity for the semantic stage to accept a node match.
+    classification_semantic_threshold: float = 0.45
+    # Results below this confidence are flagged needs_review for triage.
+    classification_review_threshold: float = 0.5
+
     @property
     def jira_project_list(self) -> list[str]:
         return [p.strip() for p in self.jira_projects.split(",") if p.strip()]

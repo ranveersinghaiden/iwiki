@@ -1,0 +1,2345 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "generated": "2026-06-25",
+    "sources": [
+      "https://eroad.atlassian.net/wiki/spaces/ARE/pages/4689166379/Product+Domain+Map",
+      "https://eroad.atlassian.net/wiki/spaces/BA/pages/2234164166/Product+Team+Overview"
+    ],
+    "description": "EROAD product domain map for agent traversal. Use capability_systems[key] to look up any system, dependency_graph[key].upstream / .downstream to find impact, platform_map to filter by platform, team_map to find owners.",
+    "agent_usage": "When given a Jira ticket: 1) extract affected product/service name, 2) find matching system key in capability_systems, 3) traverse dependency_graph to identify upstream (what feeds it) and downstream (what it feeds), 4) identify platforms, 5) determine test scope from impact_matrix."
+  },
+
+  "domains": [
+    {
+      "id": "safety",
+      "name": "Safety",
+      "description": "Prevents incidents, detects unsafe conditions, and supports coaching of driver behaviour.",
+      "tribe": "Safety",
+      "subdomains": [
+        {
+          "id": "safety-video",
+          "name": "Video Telematics",
+          "squad": "Video Safety",
+          "systems": [
+            "safety-video-clarity_dashcam",
+            "safety-video-clarity_edge",
+            "safety-video-clarity_edge_multi_cam",
+            "safety-video-replay",
+            "safety-video-fatigue_monitoring",
+            "safety-video-seat_shaker",
+            "safety-video-notifications"
+          ]
+        },
+        {
+          "id": "safety-driver",
+          "name": "Driver Behaviour",
+          "squad": "Driver Performance",
+          "systems": [
+            "safety-driver-drive_buddy",
+            "safety-driver-scoring",
+            "safety-driver-coaching",
+            "safety-driver-leaderboard",
+            "safety-driver-overspeed",
+            "safety-driver-safety_profile"
+          ]
+        },
+        {
+          "id": "safety-incident",
+          "name": "Incident Detection and Response",
+          "squad": "Driver Team",
+          "systems": [
+            "safety-incident-cara"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "compliance",
+      "name": "Compliance",
+      "description": "Regulatory obligations for fleet operators across hours of service, fatigue, dispatch, and vehicle inspection.",
+      "tribe": "Compliance",
+      "subdomains": [
+        {
+          "id": "compliance-eld",
+          "name": "Electronic Logging (Hours of Service — NA)",
+          "squad": "DiME",
+          "systems": [
+            "compliance-eld-myeroad",
+            "compliance-eld-360",
+            "compliance-eld-prepass"
+          ]
+        },
+        {
+          "id": "compliance-fatigue",
+          "name": "Fatigue Regulation (ANZ)",
+          "squad": "Driver Compliance",
+          "systems": [
+            "compliance-fatigue-ewd",
+            "compliance-fatigue-elb"
+          ]
+        },
+        {
+          "id": "compliance-dispatch",
+          "name": "Dispatch and Proof of Service",
+          "squad": "EPOD & Route Management",
+          "systems": [
+            "compliance-dispatch-route_manager",
+            "compliance-dispatch-route_inspector",
+            "compliance-dispatch-epod"
+          ]
+        },
+        {
+          "id": "compliance-inspection",
+          "name": "Vehicle Inspection and Environmental Compliance",
+          "squad": "Fleet Efficiency",
+          "systems": [
+            "compliance-inspection-dvir",
+            "compliance-inspection-hired_asset",
+            "compliance-inspection-carb"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tax",
+      "name": "Tax",
+      "description": "Road user charging, fuel tax, and weight/distance tax obligations across NZ, AU, and NA.",
+      "tribe": "Compliance",
+      "subdomains": [
+        {
+          "id": "tax-ruc",
+          "name": "Road User Charging (ANZ)",
+          "squad": "Global Tax",
+          "systems": [
+            "tax-ruc-ruc",
+            "tax-ruc-eruc_b2c",
+            "tax-ruc-edr_manager",
+            "tax-ruc-label_printing"
+          ]
+        },
+        {
+          "id": "tax-weight",
+          "name": "Weight and Distance Tax (NA)",
+          "squad": "Global Tax",
+          "systems": [
+            "tax-weight-owmt",
+            "tax-weight-ruaf",
+            "tax-weight-irp"
+          ]
+        },
+        {
+          "id": "tax-fuel",
+          "name": "Fuel and Benefits Tax",
+          "squad": "Global Tax",
+          "systems": [
+            "tax-fuel-ftc",
+            "tax-fuel-fbt",
+            "tax-fuel-ifta",
+            "tax-fuel-fuel_card"
+          ]
+        },
+        {
+          "id": "tax-sharing",
+          "name": "Vehicle Sharing",
+          "squad": "Global Tax",
+          "systems": [
+            "tax-sharing-bookit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cold_chain",
+      "name": "Cold Chain",
+      "description": "Temperature-monitored transport compliance and refrigerated fleet management.",
+      "tribe": "Cold Chain",
+      "subdomains": [
+        {
+          "id": "cold_chain-reefer",
+          "name": "Refrigerated Load Management",
+          "squad": "Refrigerated Load Management",
+          "systems": [
+            "cold_chain-reefer-coretemp",
+            "cold_chain-reefer-management",
+            "cold_chain-reefer-reports",
+            "cold_chain-reefer-alerts",
+            "cold_chain-reefer-carb",
+            "cold_chain-reefer-map",
+            "cold_chain-reefer-api",
+            "cold_chain-reefer-mobile",
+            "cold_chain-reefer-settings",
+            "cold_chain-reefer-electric",
+            "cold_chain-reefer-pct"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "geospatial",
+      "name": "Geospatial",
+      "description": "Spatial intelligence, location enrichment, geofencing, and navigation.",
+      "tribe": "Sustain",
+      "subdomains": [
+        {
+          "id": "geospatial-geocoding",
+          "name": "Geocoding and Spatial Enrichment",
+          "squad": "Geospatial Services",
+          "systems": [
+            "geospatial-geocoding-geo_v1",
+            "geospatial-geocoding-geo_v3",
+            "geospatial-geocoding-ptv"
+          ]
+        },
+        {
+          "id": "geospatial-geofencing",
+          "name": "Geofencing and Location Management",
+          "squad": "Geospatial Services",
+          "systems": [
+            "geospatial-geofencing-backend",
+            "geospatial-geofencing-location_mgmt"
+          ]
+        },
+        {
+          "id": "geospatial-navigation",
+          "name": "Navigation and Routing",
+          "squad": "Safe Driving (ON HOLD)",
+          "systems": [
+            "geospatial-navigation-eroad_nav",
+            "geospatial-navigation-copilot"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fleet_intel",
+      "name": "Fleet Intelligence",
+      "description": "Analytics and health intelligence layer for fleet operations — utilisation, fuel economy, sustainability, emissions, vehicle maintenance.",
+      "tribe": "Sustain / Core & Data",
+      "subdomains": [
+        {
+          "id": "fleet_intel-utilisation",
+          "name": "Fleet Utilisation and Reporting",
+          "squad": "Fleet Efficiency",
+          "systems": [
+            "fleet_intel-utilisation-fleet_utilisation",
+            "fleet_intel-utilisation-fleet_insights",
+            "fleet_intel-utilisation-common_reports"
+          ]
+        },
+        {
+          "id": "fleet_intel-energy",
+          "name": "Fuel and Energy Performance",
+          "squad": "Fleet Efficiency",
+          "systems": [
+            "fleet_intel-energy-fuel_economy"
+          ]
+        },
+        {
+          "id": "fleet_intel-sustainability",
+          "name": "Sustainability and Emissions",
+          "squad": "Fleet Efficiency",
+          "systems": [
+            "fleet_intel-sustainability-sustainability",
+            "fleet_intel-sustainability-decarb"
+          ]
+        },
+        {
+          "id": "fleet_intel-maintenance",
+          "name": "Vehicle Maintenance",
+          "squad": "Fleet Efficiency",
+          "systems": [
+            "fleet_intel-maintenance-service_module",
+            "fleet_intel-maintenance-service_manager_360"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "customer",
+      "name": "Customer",
+      "description": "The legal entity, organisation, and account relationship — who is the customer.",
+      "tribe": "Core & Data",
+      "type": "core_entity",
+      "subdomains": [
+        {
+          "id": "customer-organisation",
+          "name": "Organisation and Account Management",
+          "squad": "Data Platform",
+          "systems": [
+            "customer-organisation-user_mgmt",
+            "customer-organisation-org_switcher",
+            "customer-organisation-bulk_import"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "person",
+      "name": "Person",
+      "description": "The individual — drivers, employees, and operatives within the fleet.",
+      "tribe": "Core & Data",
+      "type": "core_entity",
+      "subdomains": [
+        {
+          "id": "person-driver",
+          "name": "Driver and Operative Management",
+          "squad": "Data Platform / Driver Team",
+          "systems": [
+            "person-driver-mgmt_v1",
+            "person-driver-mgmt_v2",
+            "person-driver-health",
+            "person-driver-competency"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "asset",
+      "name": "Asset",
+      "description": "The physical asset — vehicles, trailers, and equipment.",
+      "tribe": "Core & Data",
+      "type": "core_entity",
+      "subdomains": [
+        {
+          "id": "asset-vehicle",
+          "name": "Vehicle and Fleet Management",
+          "squad": "Data Platform / Fleet Team",
+          "systems": [
+            "asset-vehicle-vehicle_mgmt",
+            "asset-vehicle-device_health",
+            "asset-vehicle-attributes",
+            "asset-vehicle-trailer_mgmt",
+            "asset-vehicle-share_manager"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "identity",
+      "name": "Identity",
+      "description": "Authentication and access control — who is allowed in and what they can do.",
+      "tribe": "Sustain",
+      "type": "core_entity",
+      "subdomains": [
+        {
+          "id": "identity-auth",
+          "name": "Authentication and Access Control",
+          "squad": "Identity",
+          "systems": [
+            "identity-auth-sso_mfa",
+            "identity-auth-impersonation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entitlements_and_associations",
+      "name": "Entitlements and Associations",
+      "description": "What each customer is permitted to access, and associations between entities.",
+      "tribe": "Core & Data",
+      "type": "core_entity",
+      "subdomains": [
+        {
+          "id": "entitlements_and_associations-sharing",
+          "name": "Entitlements and Sharing",
+          "squad": "Data Platform",
+          "systems": [
+            "entitlements_and_associations-sharing-eroad_share"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "notification",
+      "name": "Notification",
+      "description": "Outbound communications from the platform to users, drivers, and external systems.",
+      "tribe": "Core & Data",
+      "type": "core_entity",
+      "subdomains": [
+        {
+          "id": "notification-outbound",
+          "name": "Outbound Notifications and Messaging",
+          "squad": "Fleet Team",
+          "systems": [
+            "notification-outbound-alerts",
+            "notification-outbound-email",
+            "notification-outbound-vehicle_messaging"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "device_connectivity",
+      "name": "Device and Connectivity",
+      "description": "Full hardware-to-platform connectivity pipeline: physical device through telemetry ingestion to normalised event data.",
+      "tribe": "Sustain / Devices",
+      "type": "cross_cutting",
+      "subdomains": [
+        {
+          "id": "device_connectivity-in_vehicle",
+          "name": "In-Vehicle Hardware",
+          "squad": "EHUBO 2",
+          "systems": [
+            "device_connectivity-in_vehicle-ehubo2"
+          ]
+        },
+        {
+          "id": "device_connectivity-trailer",
+          "name": "Trailer and Asset Connectivity",
+          "squad": "CoreHub & Sensor",
+          "systems": [
+            "device_connectivity-trailer-corehub_standard",
+            "device_connectivity-trailer-corehub_trailer",
+            "device_connectivity-trailer-sensors",
+            "device_connectivity-trailer-trailer_can",
+            "device_connectivity-trailer-sensor_ux"
+          ]
+        },
+        {
+          "id": "device_connectivity-operations",
+          "name": "Device Operations",
+          "squad": "CoreHub & Sensor",
+          "systems": [
+            "device_connectivity-operations-installer_app",
+            "device_connectivity-operations-support_panel"
+          ]
+        },
+        {
+          "id": "device_connectivity-ingestion",
+          "name": "Telemetry Ingestion",
+          "squad": "Telematics Ingestion",
+          "systems": [
+            "device_connectivity-ingestion-360_pipeline",
+            "device_connectivity-ingestion-myeroad_pipeline",
+            "device_connectivity-ingestion-consolidation_v1",
+            "device_connectivity-ingestion-consolidation_v2",
+            "device_connectivity-ingestion-event_forwarder"
+          ]
+        },
+        {
+          "id": "device_connectivity-connected",
+          "name": "Connected Vehicle",
+          "squad": "Core Telematics",
+          "systems": [
+            "device_connectivity-connected-ev_data",
+            "device_connectivity-connected-canbus"
+          ]
+        },
+        {
+          "id": "device_connectivity-oem",
+          "name": "OEM Hardware Integration",
+          "squad": "OEM Integrations",
+          "systems": [
+            "device_connectivity-oem-reefer_oem_integrations"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "data_integration",
+      "name": "Data and Integration",
+      "description": "Customer data access, data sharing pipelines, partner integrations, and analytics data infrastructure.",
+      "tribe": "Connected Data",
+      "type": "cross_cutting",
+      "subdomains": [
+        {
+          "id": "data_integration-sharing",
+          "name": "Customer Data Sharing",
+          "squad": "Customer Data Sharing",
+          "systems": [
+            "data_integration-sharing-cip",
+            "data_integration-sharing-sysco_cip",
+            "data_integration-sharing-partner_gateway",
+            "data_integration-sharing-myeroad_share",
+            "data_integration-sharing-eroad_analyst",
+            "data_integration-sharing-360_edc",
+            "data_integration-sharing-partner_apis",
+            "data_integration-sharing-event_hub",
+            "data_integration-sharing-ecp_exchange",
+            "data_integration-sharing-legacy_apis",
+            "data_integration-sharing-apigee",
+            "data_integration-sharing-geotab",
+            "data_integration-sharing-transtech"
+          ]
+        },
+        {
+          "id": "data_integration-operational",
+          "name": "Operational Data Stores",
+          "squad": "Core Data",
+          "systems": [
+            "data_integration-operational-360_databases"
+          ]
+        },
+        {
+          "id": "data_integration-analytics",
+          "name": "Analytics Infrastructure",
+          "squad": "Data Platform",
+          "systems": [
+            "data_integration-analytics-reporting_platform"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform",
+      "name": "Platform",
+      "description": "Cloud infrastructure, developer tooling, and operations support.",
+      "tribe": "Sustain",
+      "type": "cross_cutting",
+      "subdomains": [
+        {
+          "id": "platform-infrastructure",
+          "name": "Cloud Infrastructure",
+          "squad": "AWS/Azure Platform",
+          "systems": [
+            "platform-infrastructure-aws",
+            "platform-infrastructure-azure",
+            "platform-infrastructure-iac"
+          ]
+        },
+        {
+          "id": "platform-developer",
+          "name": "Developer Platform",
+          "squad": "DevProd / Web Foundations / Mobile Foundations",
+          "systems": [
+            "platform-developer-cicd",
+            "platform-developer-web_foundations",
+            "platform-developer-mobile_foundations",
+            "platform-developer-driver_mobile",
+            "platform-developer-fleet_mobile",
+            "platform-developer-qa",
+            "platform-developer-ai",
+            "platform-developer-site_nav"
+          ]
+        },
+        {
+          "id": "platform-operations",
+          "name": "Operations and Support Tooling",
+          "squad": "Sustain",
+          "systems": [
+            "platform-operations-outage",
+            "platform-operations-support"
+          ]
+        }
+      ]
+    }
+  ],
+
+  "capability_systems": {
+    "safety-video-clarity_dashcam": {
+      "name": "Clarity Dashcam",
+      "key": "safety-video-clarity_dashcam",
+      "domain": "safety",
+      "subdomain": "safety-video",
+      "squad": "Video Safety",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "4-configuration dashcam linking video with vehicle and driver data.",
+      "jira_labels": ["dashcam", "video-safety", "clarity"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "safety-video-clarity_edge": {
+      "name": "Clarity Edge",
+      "key": "safety-video-clarity_edge",
+      "domain": "safety",
+      "subdomain": "safety-video",
+      "squad": "Video Safety",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "growth",
+      "description": "Multi-camera AI dashcam with fatigue detection and real-time risk alerts.",
+      "jira_labels": ["clarity-edge", "video-safety", "fatigue"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "safety-video-clarity_edge_multi_cam": {
+      "name": "Clarity Edge Multi-Cam",
+      "key": "safety-video-clarity_edge_multi_cam",
+      "domain": "safety",
+      "subdomain": "safety-video",
+      "squad": "Video Safety",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "growth",
+      "description": "Extends Clarity Edge to 6 cameras with in-cab display.",
+      "jira_labels": ["clarity-edge-multicam", "video-safety"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "safety-video-replay": {
+      "name": "Video Replay Portal",
+      "key": "safety-video-replay",
+      "domain": "safety",
+      "subdomain": "safety-video",
+      "squad": "Video Safety",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Portal to search, manage, and review dashcam footage.",
+      "jira_labels": ["video-replay", "dashcam", "replay"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "safety-video-fatigue_monitoring": {
+      "name": "Fatigue Monitoring Service",
+      "key": "safety-video-fatigue_monitoring",
+      "domain": "safety",
+      "subdomain": "safety-video",
+      "squad": "Video Safety",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "AI-based fatigue detection via Clarity Edge Fatigue Camera.",
+      "jira_labels": ["fatigue-monitoring", "video-safety"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "safety-video-seat_shaker": {
+      "name": "Seat Shaker",
+      "key": "safety-video-seat_shaker",
+      "domain": "safety",
+      "subdomain": "safety-video",
+      "squad": "Video Safety",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "Vibration add-on triggered by drowsiness detection.",
+      "jira_labels": ["seat-shaker", "fatigue"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "safety-video-notifications": {
+      "name": "Dashcam Event Notifications",
+      "key": "safety-video-notifications",
+      "domain": "safety",
+      "subdomain": "safety-video",
+      "squad": "Safety Foundations",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "Email alerting for dashcam events.",
+      "jira_labels": ["dashcam-notifications"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "safety-driver-drive_buddy": {
+      "name": "Drive Buddy Fatigue",
+      "key": "safety-driver-drive_buddy",
+      "domain": "safety",
+      "subdomain": "safety-driver",
+      "squad": "Driver Performance",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "growth",
+      "description": "In-cab break reminders with fatigue policy compliance reporting.",
+      "jira_labels": ["drive-buddy", "fatigue", "driver-performance"],
+      "test_modules": ["mobile-test-automation", "myeroad/myeroad-e2e-tests"]
+    },
+    "safety-driver-scoring": {
+      "name": "Driver Scoring",
+      "key": "safety-driver-scoring",
+      "domain": "safety",
+      "subdomain": "safety-driver",
+      "squad": "Driver Performance",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "Configurable single safety score from all driving behaviours.",
+      "jira_labels": ["driver-scoring", "driver-performance"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "safety-driver-coaching": {
+      "name": "Driver Coaching",
+      "key": "safety-driver-coaching",
+      "domain": "safety",
+      "subdomain": "safety-driver",
+      "squad": "Driver Performance",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "Real-time in-cab feedback and post-event reporting.",
+      "jira_labels": ["driver-coaching", "driver-performance"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "safety-driver-leaderboard": {
+      "name": "Driver Leaderboard",
+      "key": "safety-driver-leaderboard",
+      "domain": "safety",
+      "subdomain": "safety-driver",
+      "squad": "Driver Performance",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Ranking and benchmarking of driver safety metrics.",
+      "jira_labels": ["driver-leaderboard", "driver-performance"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "safety-driver-overspeed": {
+      "name": "Driver Overspeed",
+      "key": "safety-driver-overspeed",
+      "domain": "safety",
+      "subdomain": "safety-driver",
+      "squad": "Driver Performance",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "GPS-based overspeed event recording against posted limit.",
+      "jira_labels": ["overspeed", "driver-performance"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "safety-driver-safety_profile": {
+      "name": "Driver Safety Profile",
+      "key": "safety-driver-safety_profile",
+      "domain": "safety",
+      "subdomain": "safety-driver",
+      "squad": "Driver Performance",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Consolidated driver safety view from telemetry and compliance data.",
+      "jira_labels": ["driver-safety-profile", "driver-performance"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "safety-incident-cara": {
+      "name": "Collision and Rollover Alerts (CARA)",
+      "key": "safety-incident-cara",
+      "domain": "safety",
+      "subdomain": "safety-incident",
+      "squad": "Driver Team",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Automatic collision/rollover/duress alerts with first-responder notification.",
+      "jira_labels": ["CARA", "collision", "rollover", "incident"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "compliance-eld-myeroad": {
+      "name": "ELD for MyEROAD",
+      "key": "compliance-eld-myeroad",
+      "domain": "compliance",
+      "subdomain": "compliance-eld",
+      "squad": "DiME",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Connects to truck engine to auto-record HOS with in-cab display.",
+      "jira_labels": ["ELD", "HOS", "dime", "myeroad"],
+      "test_modules": ["mobile-test-automation", "myeroad/myeroad-e2e-tests"]
+    },
+    "compliance-eld-360": {
+      "name": "ELD for 360",
+      "key": "compliance-eld-360",
+      "domain": "compliance",
+      "subdomain": "compliance-eld",
+      "squad": "DiME",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "ELD for the 360 platform (Coretex).",
+      "jira_labels": ["ELD", "HOS", "360"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "compliance-eld-prepass": {
+      "name": "Pre-Pass Integration",
+      "key": "compliance-eld-prepass",
+      "domain": "compliance",
+      "subdomain": "compliance-eld",
+      "squad": "DiME",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Weigh station bypass integration.",
+      "jira_labels": ["pre-pass", "weigh-station"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "compliance-fatigue-ewd": {
+      "name": "Electronic Work Diary",
+      "key": "compliance-fatigue-ewd",
+      "domain": "compliance",
+      "subdomain": "compliance-fatigue",
+      "squad": "Driver Compliance",
+      "platforms": ["Coretex360"],
+      "lifecycle": "growth",
+      "description": "AU heavy transport driver work and rest tracking.",
+      "jira_labels": ["EWD", "fatigue-regulation", "AU"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "compliance-fatigue-elb": {
+      "name": "Electronic Logbook",
+      "key": "compliance-fatigue-elb",
+      "domain": "compliance",
+      "subdomain": "compliance-fatigue",
+      "squad": "Driver Compliance",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "growth",
+      "description": "NZ in-cab driving, rest, and work hours recording.",
+      "jira_labels": ["ELB", "logbook", "NZ", "fatigue-regulation"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "compliance-dispatch-route_manager": {
+      "name": "Route Manager",
+      "key": "compliance-dispatch-route_manager",
+      "domain": "compliance",
+      "subdomain": "compliance-dispatch",
+      "squad": "EPOD & Route Management",
+      "platforms": ["Phoenix"],
+      "lifecycle": "mature",
+      "description": "Route planning, optimisation, and management (currently Sysco-specific).",
+      "jira_labels": ["route-manager", "dispatch", "sysco"],
+      "test_modules": []
+    },
+    "compliance-dispatch-route_inspector": {
+      "name": "Route Inspector",
+      "key": "compliance-dispatch-route_inspector",
+      "domain": "compliance",
+      "subdomain": "compliance-dispatch",
+      "squad": "EPOD & Route Management",
+      "platforms": ["Phoenix"],
+      "lifecycle": "growth",
+      "description": "Route review, deviation analysis, and performance metrics.",
+      "jira_labels": ["route-inspector", "dispatch"],
+      "test_modules": []
+    },
+    "compliance-dispatch-epod": {
+      "name": "Proof of Service (ePOD)",
+      "key": "compliance-dispatch-epod",
+      "domain": "compliance",
+      "subdomain": "compliance-dispatch",
+      "squad": "EPOD & Route Management",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Electronic proof of delivery and service confirmation.",
+      "jira_labels": ["ePOD", "proof-of-service", "dispatch"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "compliance-inspection-dvir": {
+      "name": "DVIR",
+      "key": "compliance-inspection-dvir",
+      "domain": "compliance",
+      "subdomain": "compliance-inspection",
+      "squad": "Fleet Efficiency",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Pre-trip and post-trip vehicle inspection reports.",
+      "jira_labels": ["DVIR", "inspection", "pre-trip"],
+      "test_modules": ["mobile-test-automation", "myeroad/myeroad-e2e-tests"]
+    },
+    "compliance-inspection-hired_asset": {
+      "name": "EROAD Inspect",
+      "key": "compliance-inspection-hired_asset",
+      "domain": "compliance",
+      "subdomain": "compliance-inspection",
+      "squad": "Fleet Efficiency",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Hired asset inspection for compliance tracking.",
+      "jira_labels": ["inspect", "hired-asset", "inspection"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "compliance-inspection-carb": {
+      "name": "CARB Compliance",
+      "key": "compliance-inspection-carb",
+      "domain": "compliance",
+      "subdomain": "compliance-inspection",
+      "squad": "Fleet Efficiency",
+      "platforms": ["Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "California Air Resources Board emissions compliance reporting.",
+      "jira_labels": ["CARB", "emissions", "compliance"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "tax-ruc-ruc": {
+      "name": "Road User Charges",
+      "key": "tax-ruc-ruc",
+      "domain": "tax",
+      "subdomain": "tax-ruc",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Electronic RUC purchase and management (NZ).",
+      "jira_labels": ["RUC", "road-user-charges", "NZ"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "myeroad/eruc-web-automation"]
+    },
+    "tax-ruc-eruc_b2c": {
+      "name": "eRUC B2C",
+      "key": "tax-ruc-eruc_b2c",
+      "domain": "tax",
+      "subdomain": "tax-ruc",
+      "squad": "B2C RUC",
+      "platforms": ["Mobile"],
+      "lifecycle": "in_development",
+      "description": "Android and iOS consumer app for buying RUC.",
+      "jira_labels": ["eRUC", "B2C", "RUC", "mobile"],
+      "test_modules": ["myeroad/eruc-web-automation"]
+    },
+    "tax-ruc-edr_manager": {
+      "name": "EDR Manager",
+      "key": "tax-ruc-edr_manager",
+      "domain": "tax",
+      "subdomain": "tax-ruc",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Electronic Distance Recorder health tracking.",
+      "jira_labels": ["EDR", "distance-recorder", "RUC"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "tax-ruc-label_printing": {
+      "name": "RUC Label Printing",
+      "key": "tax-ruc-label_printing",
+      "domain": "tax",
+      "subdomain": "tax-ruc",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "end_of_life",
+      "description": "Legacy physical RUC label printing — sunset mid-2025.",
+      "jira_labels": ["RUC-labels"],
+      "test_modules": []
+    },
+    "tax-weight-owmt": {
+      "name": "Oregon Weight Mile Tax",
+      "key": "tax-weight-owmt",
+      "domain": "tax",
+      "subdomain": "tax-weight",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "growth",
+      "description": "Quarterly weight-mileage tax filing (NA).",
+      "jira_labels": ["OWMT", "weight-mile-tax", "NA"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "tax-weight-ruaf": {
+      "name": "Road Use Assessment Fee",
+      "key": "tax-weight-ruaf",
+      "domain": "tax",
+      "subdomain": "tax-weight",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "end_of_life",
+      "description": "Non-divisible haul fee for over-limit vehicles (NA).",
+      "jira_labels": ["RUAF"],
+      "test_modules": []
+    },
+    "tax-weight-irp": {
+      "name": "International Registration Plan",
+      "key": "tax-weight-irp",
+      "domain": "tax",
+      "subdomain": "tax-weight",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "growth",
+      "description": "US and Canada apportioned vehicle registration.",
+      "jira_labels": ["IRP", "registration"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "tax-fuel-ftc": {
+      "name": "Fuel Tax Credit",
+      "key": "tax-fuel-ftc",
+      "domain": "tax",
+      "subdomain": "tax-fuel",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "growth",
+      "description": "Fuel rebate claims for on and off-road use (AU).",
+      "jira_labels": ["FTC", "fuel-tax", "AU"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "tax-fuel-fbt": {
+      "name": "Fringe Benefits Tax",
+      "key": "tax-fuel-fbt",
+      "domain": "tax",
+      "subdomain": "tax-fuel",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "growth",
+      "description": "Electronic FBT logbook using the Operating Cost method.",
+      "jira_labels": ["FBT", "fringe-benefits", "AU"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "tax-fuel-ifta": {
+      "name": "International Fuel Tax Agreement",
+      "key": "tax-fuel-ifta",
+      "domain": "tax",
+      "subdomain": "tax-fuel",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "growth",
+      "description": "Automated IFTA recordkeeping and return filing (NA).",
+      "jira_labels": ["IFTA", "fuel-tax", "NA"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "tax-fuel-fuel_card": {
+      "name": "Fuel Card Integrations",
+      "key": "tax-fuel-fuel_card",
+      "domain": "tax",
+      "subdomain": "tax-fuel",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "growth",
+      "description": "Fuel card management and provider integrations.",
+      "jira_labels": ["fuel-card"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "tax-sharing-bookit": {
+      "name": "BookIt Car Sharing",
+      "key": "tax-sharing-bookit",
+      "domain": "tax",
+      "subdomain": "tax-sharing",
+      "squad": "Global Tax",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "moderate",
+      "description": "Vehicle booking and fleet sharing for company vehicles.",
+      "jira_labels": ["bookit", "car-sharing", "vehicle-sharing"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "cold_chain-reefer-coretemp": {
+      "name": "CoreTemp",
+      "key": "cold_chain-reefer-coretemp",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "growth",
+      "description": "Route-based temperature compliance with FSQA/FSMA automation.",
+      "jira_labels": ["coretemp", "temperature", "cold-chain", "reefer"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "cold_chain-reefer-management": {
+      "name": "Reefer Management",
+      "key": "cold_chain-reefer-management",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "Live reefer data with investigation tools and 2-way commands.",
+      "jira_labels": ["reefer-management", "cold-chain"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "cold_chain-reefer-reports": {
+      "name": "Reefer Reports and Dashboards",
+      "key": "cold_chain-reefer-reports",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "Snapshot and historical reefer event reports.",
+      "jira_labels": ["reefer-reports", "cold-chain"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "cold_chain-reefer-alerts": {
+      "name": "Reefer Alerts",
+      "key": "cold_chain-reefer-alerts",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "Real-time notifications for critical reefer states.",
+      "jira_labels": ["reefer-alerts", "cold-chain"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "cold_chain-reefer-carb": {
+      "name": "Reefer Trailer CARB Reporting",
+      "key": "cold_chain-reefer-carb",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "State-regulated runtime reporting for diesel reefers (NA).",
+      "jira_labels": ["reefer-CARB", "cold-chain", "CARB"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "cold_chain-reefer-map": {
+      "name": "Reefer on Map",
+      "key": "cold_chain-reefer-map",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "Reefer vehicle data in map context.",
+      "jira_labels": ["reefer-map", "cold-chain"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "cold_chain-reefer-api": {
+      "name": "Reefer API",
+      "key": "cold_chain-reefer-api",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "Latest and historical reefer data API with 2-way command support.",
+      "jira_labels": ["reefer-api", "cold-chain"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "cold_chain-reefer-mobile": {
+      "name": "Reefer Mobile Experience",
+      "key": "cold_chain-reefer-mobile",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Mobile"],
+      "lifecycle": "pre_launch",
+      "description": "Mobile UX for reefer monitoring.",
+      "jira_labels": ["reefer-mobile", "cold-chain"],
+      "test_modules": []
+    },
+    "cold_chain-reefer-settings": {
+      "name": "Reefer Settings Management",
+      "key": "cold_chain-reefer-settings",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "pre_launch",
+      "description": "User-configurable alert thresholds.",
+      "jira_labels": ["reefer-settings", "cold-chain"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "cold_chain-reefer-electric": {
+      "name": "Electric Reefer Solutions",
+      "key": "cold_chain-reefer-electric",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "introduction",
+      "description": "EV-aligned reefer monitoring for NA market.",
+      "jira_labels": ["reefer-electric", "cold-chain", "EV"],
+      "test_modules": []
+    },
+    "cold_chain-reefer-pct": {
+      "name": "PCT and Dry",
+      "key": "cold_chain-reefer-pct",
+      "domain": "cold_chain",
+      "subdomain": "cold_chain-reefer",
+      "squad": "Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "growth",
+      "description": "PCT device event ingestion into 360.",
+      "jira_labels": ["PCT", "cold-chain"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "geospatial-geocoding-geo_v1": {
+      "name": "Geographic Service V1",
+      "key": "geospatial-geocoding-geo_v1",
+      "domain": "geospatial",
+      "subdomain": "geospatial-geocoding",
+      "squad": "Geospatial Services",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "decline",
+      "description": "Legacy reverse geocoding and spatial enrichment (HERE Maps RDF).",
+      "jira_labels": ["geo-v1", "geocoding", "geospatial"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "geospatial-geocoding-geo_v3": {
+      "name": "Geographic Service V3",
+      "key": "geospatial-geocoding-geo_v3",
+      "domain": "geospatial",
+      "subdomain": "geospatial-geocoding",
+      "squad": "Geospatial Services",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "in_development",
+      "description": "Modern HERE Platform geocoding with automated map loads.",
+      "jira_labels": ["geo-v3", "geocoding", "geospatial", "HERE"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "geospatial-geocoding-ptv": {
+      "name": "PTV Integration",
+      "key": "geospatial-geocoding-ptv",
+      "domain": "geospatial",
+      "subdomain": "geospatial-geocoding",
+      "squad": "Geospatial Services",
+      "platforms": ["Coretex360"],
+      "lifecycle": "decline",
+      "description": "PTV xMapMatch and xRoute for 360 overspeed, road type, and toll identification.",
+      "jira_labels": ["PTV", "GIS", "geocoding"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "geospatial-geofencing-backend": {
+      "name": "Geofence Backend Service",
+      "key": "geospatial-geofencing-backend",
+      "domain": "geospatial",
+      "subdomain": "geospatial-geofencing",
+      "squad": "Geospatial Services",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Backend for geofence CRUD, query, and entry/exit detection.",
+      "jira_labels": ["geofence", "geofencing", "geospatial"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "geospatial-geofencing-location_mgmt": {
+      "name": "Location Management and Enrichments",
+      "key": "geospatial-geofencing-location_mgmt",
+      "domain": "geospatial",
+      "subdomain": "geospatial-geofencing",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "decline",
+      "description": "Add/edit/delete geofences, assignments, and grouping.",
+      "jira_labels": ["location-management", "geofence"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "geospatial-navigation-eroad_nav": {
+      "name": "EROAD Navigation",
+      "key": "geospatial-navigation-eroad_nav",
+      "domain": "geospatial",
+      "subdomain": "geospatial-navigation",
+      "squad": "Safe Driving (ON HOLD)",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "growth",
+      "description": "Truck-safe routing with turn-by-turn voice guidance and job workflow integration.",
+      "jira_labels": ["navigation", "eroad-nav", "routing"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "geospatial-navigation-copilot": {
+      "name": "CoPilot",
+      "key": "geospatial-navigation-copilot",
+      "domain": "geospatial",
+      "subdomain": "geospatial-navigation",
+      "squad": "Safe Driving (ON HOLD)",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "decline",
+      "description": "In-cab GPS navigation app (declining — legacy).",
+      "jira_labels": ["copilot", "navigation"],
+      "test_modules": []
+    },
+    "fleet_intel-utilisation-fleet_utilisation": {
+      "name": "Fleet Utilisation",
+      "key": "fleet_intel-utilisation-fleet_utilisation",
+      "domain": "fleet_intel",
+      "subdomain": "fleet_intel-utilisation",
+      "squad": "Fleet Efficiency",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Fleet utilisation dashboards and reports.",
+      "jira_labels": ["fleet-utilisation", "fleet-intelligence"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "fleet_intel-utilisation-fleet_insights": {
+      "name": "Fleet Insights Reporting",
+      "key": "fleet_intel-utilisation-fleet_insights",
+      "domain": "fleet_intel",
+      "subdomain": "fleet_intel-utilisation",
+      "squad": "Fleet Efficiency",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Fleet-level insights and performance reporting.",
+      "jira_labels": ["fleet-insights", "reporting"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "fleet_intel-utilisation-common_reports": {
+      "name": "Common Telematics and Entity Reports",
+      "key": "fleet_intel-utilisation-common_reports",
+      "domain": "fleet_intel",
+      "subdomain": "fleet_intel-utilisation",
+      "squad": "Core Telematics",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "introduction",
+      "description": "Standardised entity and telematics reports.",
+      "jira_labels": ["common-reports", "telematics-reports"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "fleet_intel-energy-fuel_economy": {
+      "name": "Fuel and Energy Economy Reporting",
+      "key": "fleet_intel-energy-fuel_economy",
+      "domain": "fleet_intel",
+      "subdomain": "fleet_intel-energy",
+      "squad": "Fleet Efficiency",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Fuel efficiency and energy economy reporting.",
+      "jira_labels": ["fuel-economy", "energy-reporting"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "fleet_intel-sustainability-sustainability": {
+      "name": "Sustainability Module",
+      "key": "fleet_intel-sustainability-sustainability",
+      "domain": "fleet_intel",
+      "subdomain": "fleet_intel-sustainability",
+      "squad": "Fleet Efficiency",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Fuel, idling, and driver behaviour sustainability reporting.",
+      "jira_labels": ["sustainability", "emissions"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "fleet_intel-sustainability-decarb": {
+      "name": "Decarb Emissions Reporting",
+      "key": "fleet_intel-sustainability-decarb",
+      "domain": "fleet_intel",
+      "subdomain": "fleet_intel-sustainability",
+      "squad": "Fleet Efficiency",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Decarbonisation and emissions tracking.",
+      "jira_labels": ["decarb", "emissions", "sustainability"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "fleet_intel-maintenance-service_module": {
+      "name": "Service and Maintenance Module",
+      "key": "fleet_intel-maintenance-service_module",
+      "domain": "fleet_intel",
+      "subdomain": "fleet_intel-maintenance",
+      "squad": "Fleet Efficiency",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Vehicle health and maintenance scheduling.",
+      "jira_labels": ["service-module", "maintenance", "vehicle-health"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "fleet_intel-maintenance-service_manager_360": {
+      "name": "Service Manager (360)",
+      "key": "fleet_intel-maintenance-service_manager_360",
+      "domain": "fleet_intel",
+      "subdomain": "fleet_intel-maintenance",
+      "squad": "Fleet Efficiency",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "360 equivalent of the Service and Maintenance Module.",
+      "jira_labels": ["service-manager", "maintenance", "360"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "customer-organisation-user_mgmt": {
+      "name": "User Management",
+      "key": "customer-organisation-user_mgmt",
+      "domain": "customer",
+      "subdomain": "customer-organisation",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "decline",
+      "description": "Create/edit/delete users and org-level accounts.",
+      "jira_labels": ["user-management", "LMT", "BOX"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "customer-organisation-org_switcher": {
+      "name": "Organisation Switcher",
+      "key": "customer-organisation-org_switcher",
+      "domain": "customer",
+      "subdomain": "customer-organisation",
+      "squad": "Driver Team (shared)",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Multi-org switching for users with access to multiple organisations.",
+      "jira_labels": ["org-switcher"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "customer-organisation-bulk_import": {
+      "name": "Bulk Import Tools",
+      "key": "customer-organisation-bulk_import",
+      "domain": "customer",
+      "subdomain": "customer-organisation",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "decline",
+      "description": "Legacy bulk import for entities.",
+      "jira_labels": ["bulk-import"],
+      "test_modules": []
+    },
+    "person-driver-mgmt_v1": {
+      "name": "Driver Management V1",
+      "key": "person-driver-mgmt_v1",
+      "domain": "person",
+      "subdomain": "person-driver",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "decline",
+      "description": "Legacy create/edit/delete drivers (360 and MyEROAD). 360=DFT, MyEROAD=BOX.",
+      "jira_labels": ["driver-management", "DFT", "BOX"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "person-driver-mgmt_v2": {
+      "name": "Driver Management V2",
+      "key": "person-driver-mgmt_v2",
+      "domain": "person",
+      "subdomain": "person-driver",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "introduction",
+      "description": "Modernised driver management (MyEROAD APAC). Better performance, bulk upload.",
+      "jira_labels": ["driver-management-v2", "BOX"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "person-driver-health": {
+      "name": "Driver Health Reporting",
+      "key": "person-driver-health",
+      "domain": "person",
+      "subdomain": "person-driver",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "decline",
+      "description": "Driver health status views.",
+      "jira_labels": ["driver-health"],
+      "test_modules": []
+    },
+    "person-driver-competency": {
+      "name": "Competency Register",
+      "key": "person-driver-competency",
+      "domain": "person",
+      "subdomain": "person-driver",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "end_of_life",
+      "description": "Driver classification and competency tracking.",
+      "jira_labels": ["competency-register"],
+      "test_modules": []
+    },
+    "asset-vehicle-vehicle_mgmt": {
+      "name": "Vehicle Management",
+      "key": "asset-vehicle-vehicle_mgmt",
+      "domain": "asset",
+      "subdomain": "asset-vehicle",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "decline",
+      "description": "Create/edit/delete vehicles with attributes. 360=VMT, MyEROAD=BOX.",
+      "jira_labels": ["vehicle-management", "VMT", "BOX"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "asset-vehicle-device_health": {
+      "name": "Vehicle Device Health Reporting",
+      "key": "asset-vehicle-device_health",
+      "domain": "asset",
+      "subdomain": "asset-vehicle",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "introduction",
+      "description": "Vehicle health and sensor/offline dashboard. 360=VMT, MyEROAD=TELE.",
+      "jira_labels": ["device-health", "vehicle-health", "VMT", "TELE"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "asset-vehicle-attributes": {
+      "name": "Entity Attributes",
+      "key": "asset-vehicle-attributes",
+      "domain": "asset",
+      "subdomain": "asset-vehicle",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Vehicle and asset attribute management.",
+      "jira_labels": ["entity-attributes", "vehicle-attributes"],
+      "test_modules": []
+    },
+    "asset-vehicle-trailer_mgmt": {
+      "name": "Trailer Management",
+      "key": "asset-vehicle-trailer_mgmt",
+      "domain": "asset",
+      "subdomain": "asset-vehicle",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Trailer-to-vehicle association and lifecycle management.",
+      "jira_labels": ["trailer-management", "trailer"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "asset-vehicle-share_manager": {
+      "name": "Vehicle Share Manager",
+      "key": "asset-vehicle-share_manager",
+      "domain": "asset",
+      "subdomain": "asset-vehicle",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "introduction",
+      "description": "Vehicle booking and sharing for fleet pools.",
+      "jira_labels": ["vehicle-share"],
+      "test_modules": []
+    },
+    "identity-auth-sso_mfa": {
+      "name": "Authentication, SSO, MFA",
+      "key": "identity-auth-sso_mfa",
+      "domain": "identity",
+      "subdomain": "identity-auth",
+      "squad": "Identity",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Single sign-on and multi-factor authentication.",
+      "jira_labels": ["SSO", "MFA", "authentication", "cognito"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "identity-auth-impersonation": {
+      "name": "Impersonation and IAC",
+      "key": "identity-auth-impersonation",
+      "domain": "identity",
+      "subdomain": "identity-auth",
+      "squad": "Driver Team (shared)",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Internal admin impersonation tooling.",
+      "jira_labels": ["impersonation", "IAC"],
+      "test_modules": []
+    },
+    "entitlements_and_associations-sharing-eroad_share": {
+      "name": "EROAD Share",
+      "key": "entitlements_and_associations-sharing-eroad_share",
+      "domain": "entitlements_and_associations",
+      "subdomain": "entitlements_and_associations-sharing",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "introduction",
+      "description": "Asset and data sharing between fleet operators.",
+      "jira_labels": ["eroad-share", "sharing"],
+      "test_modules": []
+    },
+    "notification-outbound-alerts": {
+      "name": "Notification and Alerts",
+      "key": "notification-outbound-alerts",
+      "domain": "notification",
+      "subdomain": "notification-outbound",
+      "squad": "Fleet Team",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Core notification and alerting service.",
+      "jira_labels": ["notifications", "alerts"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "notification-outbound-email": {
+      "name": "Email Notification Engine",
+      "key": "notification-outbound-email",
+      "domain": "notification",
+      "subdomain": "notification-outbound",
+      "squad": "Fleet Team",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Outbound email notification service.",
+      "jira_labels": ["email-notification"],
+      "test_modules": []
+    },
+    "notification-outbound-vehicle_messaging": {
+      "name": "Vehicle Messaging",
+      "key": "notification-outbound-vehicle_messaging",
+      "domain": "notification",
+      "subdomain": "notification-outbound",
+      "squad": "Fleet Team",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "In-cab and driver messaging service.",
+      "jira_labels": ["vehicle-messaging", "messaging"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "device_connectivity-in_vehicle-ehubo2": {
+      "name": "EHUBO 2",
+      "key": "device_connectivity-in_vehicle-ehubo2",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-in_vehicle",
+      "squad": "EHUBO 2",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Core in-vehicle telematics device.",
+      "jira_labels": ["EHUBO", "EHUBO2", "device", "hardware"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "device_connectivity-trailer-corehub_standard": {
+      "name": "CoreHub Standard and Xtreme",
+      "key": "device_connectivity-trailer-corehub_standard",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-trailer",
+      "squad": "CoreHub & Sensor",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "Primary connectivity hub for trailers and assets.",
+      "jira_labels": ["corehub", "trailer-connectivity"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "device_connectivity-trailer-corehub_trailer": {
+      "name": "CoreHub Trailer",
+      "key": "device_connectivity-trailer-corehub_trailer",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-trailer",
+      "squad": "CoreHub & Sensor",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "Trailer-specific CoreHub configuration.",
+      "jira_labels": ["corehub-trailer"],
+      "test_modules": []
+    },
+    "device_connectivity-trailer-sensors": {
+      "name": "Sensors Suite",
+      "key": "device_connectivity-trailer-sensors",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-trailer",
+      "squad": "CoreHub & Sensor",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "Door, Drum, Lift, IOTag sensor suite.",
+      "jira_labels": ["sensors", "IOTag", "door-sensor", "lift-sensor"],
+      "test_modules": []
+    },
+    "device_connectivity-trailer-trailer_can": {
+      "name": "Trailer CAN and ABS",
+      "key": "device_connectivity-trailer-trailer_can",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-trailer",
+      "squad": "Cold Chain / Refrigerated Load Management",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "Trailer braking system BLE integration.",
+      "jira_labels": ["trailer-CAN", "ABS", "BLE"],
+      "test_modules": []
+    },
+    "device_connectivity-trailer-sensor_ux": {
+      "name": "Trailer Sensor UX",
+      "key": "device_connectivity-trailer-sensor_ux",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-trailer",
+      "squad": "CoreHub & Sensor",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "UX for expanding connected sensor suite.",
+      "jira_labels": ["sensor-ux", "trailer-sensors"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "device_connectivity-operations-installer_app": {
+      "name": "CoreHub Installer App",
+      "key": "device_connectivity-operations-installer_app",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-operations",
+      "squad": "CoreHub & Sensor",
+      "platforms": ["Mobile"],
+      "lifecycle": "mature",
+      "description": "Mobile app for device installation and commissioning.",
+      "jira_labels": ["installer-app", "corehub-installer"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "device_connectivity-operations-support_panel": {
+      "name": "CoreHub Support Panel",
+      "key": "device_connectivity-operations-support_panel",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-operations",
+      "squad": "CoreHub & Sensor",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "Internal support tooling for CoreHub device management.",
+      "jira_labels": ["corehub-support", "support-panel"],
+      "test_modules": []
+    },
+    "device_connectivity-ingestion-360_pipeline": {
+      "name": "360 Ingestion Pipeline",
+      "key": "device_connectivity-ingestion-360_pipeline",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-ingestion",
+      "squad": "Telematics Ingestion",
+      "platforms": ["Coretex360"],
+      "lifecycle": "mature",
+      "description": "End-to-end 360 ingestion (Communicators, Message Service, Atom Gateways).",
+      "jira_labels": ["360-ingestion", "atom", "message-service", "communicators"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "device_connectivity-ingestion-myeroad_pipeline": {
+      "name": "MyEROAD Ingestion Pipeline",
+      "key": "device_connectivity-ingestion-myeroad_pipeline",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-ingestion",
+      "squad": "Telematics Ingestion",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Telematics pipeline for MyEROAD (ESP Server, Event API).",
+      "jira_labels": ["myeroad-ingestion", "ESP", "event-api", "central-service"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    },
+    "device_connectivity-ingestion-consolidation_v1": {
+      "name": "Consolidation V1",
+      "key": "device_connectivity-ingestion-consolidation_v1",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-ingestion",
+      "squad": "Telematics Ingestion",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "decline",
+      "description": "Legacy stored-procedure overnight aggregation.",
+      "jira_labels": ["consolidation-v1", "dbdepot"],
+      "test_modules": []
+    },
+    "device_connectivity-ingestion-consolidation_v2": {
+      "name": "Consolidation V2",
+      "key": "device_connectivity-ingestion-consolidation_v2",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-ingestion",
+      "squad": "Telematics Ingestion",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "in_development",
+      "description": "Horizontally scalable replacement for Consolidation V1.",
+      "jira_labels": ["consolidation-v2", "consolidation"],
+      "test_modules": []
+    },
+    "device_connectivity-ingestion-event_forwarder": {
+      "name": "Customer Event Forwarder",
+      "key": "device_connectivity-ingestion-event_forwarder",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-ingestion",
+      "squad": "Telematics Ingestion",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "in_development",
+      "description": "Near-real-time outbound event streaming to customer endpoints.",
+      "jira_labels": ["event-forwarder", "kinesis", "event-hub"],
+      "test_modules": []
+    },
+    "device_connectivity-connected-ev_data": {
+      "name": "Operational EV Data",
+      "key": "device_connectivity-connected-ev_data",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-connected",
+      "squad": "Core Telematics",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "CAN-based EV state-of-charge and range data pipeline.",
+      "jira_labels": ["EV-data", "SOC", "CAN"],
+      "test_modules": []
+    },
+    "device_connectivity-connected-canbus": {
+      "name": "CANBUS Data and Smart Rules",
+      "key": "device_connectivity-connected-canbus",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-connected",
+      "squad": "Partner Telemetry",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "CAN bus data access and rule processing.",
+      "jira_labels": ["CANBUS", "CAN", "smart-rules"],
+      "test_modules": []
+    },
+    "device_connectivity-oem-reefer_oem_integrations": {
+      "name": "Reefer OEM Integrations",
+      "key": "device_connectivity-oem-reefer_oem_integrations",
+      "domain": "device_connectivity",
+      "subdomain": "device_connectivity-oem",
+      "squad": "OEM Integrations",
+      "platforms": ["Coretex360"],
+      "lifecycle": "introduction",
+      "description": "TK, Carrier, Cargo Bull, Maxwell, Volta, AEM reefer hardware integrations.",
+      "jira_labels": ["reefer-OEM", "TK", "Carrier", "OEM"],
+      "test_modules": []
+    },
+    "data_integration-sharing-cip": {
+      "name": "Customer Integrations Portal",
+      "key": "data_integration-sharing-cip",
+      "domain": "data_integration",
+      "subdomain": "data_integration-sharing",
+      "squad": "Customer Data Sharing",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "growth",
+      "description": "Azure AKS data pipelines for customer data delivery.",
+      "jira_labels": ["CIP", "customer-integration", "azure-aks"],
+      "test_modules": []
+    },
+    "data_integration-sharing-partner_apis": {
+      "name": "Partner APIs",
+      "key": "data_integration-sharing-partner_apis",
+      "domain": "data_integration",
+      "subdomain": "data_integration-sharing",
+      "squad": "Customer Data Sharing",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Public APIs for partners.",
+      "jira_labels": ["partner-api", "public-api"],
+      "test_modules": []
+    },
+    "data_integration-sharing-geotab": {
+      "name": "Geotab Integration",
+      "key": "data_integration-sharing-geotab",
+      "domain": "data_integration",
+      "subdomain": "data_integration-sharing",
+      "squad": "Partner Telemetry",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "moderate",
+      "description": "External fleet management platform data sync.",
+      "jira_labels": ["geotab", "partner-integration"],
+      "test_modules": []
+    },
+    "data_integration-operational-360_databases": {
+      "name": "360 Databases",
+      "key": "data_integration-operational-360_databases",
+      "domain": "data_integration",
+      "subdomain": "data_integration-operational",
+      "squad": "Core Data",
+      "platforms": ["Coretex360"],
+      "lifecycle": "growth",
+      "description": "360 core operational data layer (SQL MI, performance improvements).",
+      "jira_labels": ["360-databases", "SQL-MI", "database"],
+      "test_modules": []
+    },
+    "data_integration-analytics-reporting_platform": {
+      "name": "Reporting and Analytics Platform",
+      "key": "data_integration-analytics-reporting_platform",
+      "domain": "data_integration",
+      "subdomain": "data_integration-analytics",
+      "squad": "Data Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Centralised reporting and analytics platform.",
+      "jira_labels": ["reporting-platform", "analytics", "PowerBI"],
+      "test_modules": []
+    },
+    "platform-infrastructure-aws": {
+      "name": "AWS Platform",
+      "key": "platform-infrastructure-aws",
+      "domain": "platform",
+      "subdomain": "platform-infrastructure",
+      "squad": "AWS Platform",
+      "platforms": ["MyEROAD"],
+      "lifecycle": "mature",
+      "description": "Legacy AWS estate (MyEROAD, ECP).",
+      "jira_labels": ["AWS", "infrastructure"],
+      "test_modules": []
+    },
+    "platform-infrastructure-azure": {
+      "name": "Azure Platform",
+      "key": "platform-infrastructure-azure",
+      "domain": "platform",
+      "subdomain": "platform-infrastructure",
+      "squad": "Azure Platform",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "growth",
+      "description": "Vanguard Azure platform (AKS, networking, Key Vault, Service Bus).",
+      "jira_labels": ["Azure", "AKS", "infrastructure"],
+      "test_modules": []
+    },
+    "platform-developer-driver_mobile": {
+      "name": "Driver Mobile Platform",
+      "key": "platform-developer-driver_mobile",
+      "domain": "platform",
+      "subdomain": "platform-developer",
+      "squad": "Mobile Foundations",
+      "platforms": ["Mobile"],
+      "lifecycle": "mature",
+      "description": "Mobile app shell for driver-facing applications.",
+      "jira_labels": ["driver-mobile", "Drive", "mobile-platform"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "platform-developer-web_foundations": {
+      "name": "Web Foundations",
+      "key": "platform-developer-web_foundations",
+      "domain": "platform",
+      "subdomain": "platform-developer",
+      "squad": "Web Foundations",
+      "platforms": ["MyEROAD", "Coretex360"],
+      "lifecycle": "mature",
+      "description": "Shared frontend platform and component library.",
+      "jira_labels": ["web-foundations", "frontend", "component-library"],
+      "test_modules": ["core360/web-automation", "myeroad/myeroad-e2e-tests"]
+    },
+    "platform-developer-mobile_foundations": {
+      "name": "Mobile Foundations",
+      "key": "platform-developer-mobile_foundations",
+      "domain": "platform",
+      "subdomain": "platform-developer",
+      "squad": "Mobile Foundations",
+      "platforms": ["Mobile"],
+      "lifecycle": "mature",
+      "description": "Shared mobile platform.",
+      "jira_labels": ["mobile-foundations", "mobile-platform"],
+      "test_modules": ["mobile-test-automation"]
+    }
+  },
+
+  "dependency_graph": {
+    "_note": "upstream = what this system depends on (feeds INTO this system). downstream = what this system feeds into (affected when this changes).",
+
+    "device_connectivity-in_vehicle-ehubo2": {
+      "upstream": [],
+      "downstream": ["device_connectivity-ingestion-myeroad_pipeline"]
+    },
+    "device_connectivity-trailer-corehub_standard": {
+      "upstream": [],
+      "downstream": ["device_connectivity-ingestion-360_pipeline", "cold_chain-reefer-management"]
+    },
+    "device_connectivity-oem-reefer_oem_integrations": {
+      "upstream": [],
+      "downstream": ["device_connectivity-ingestion-360_pipeline", "cold_chain-reefer-management"]
+    },
+
+    "device_connectivity-ingestion-myeroad_pipeline": {
+      "upstream": ["device_connectivity-in_vehicle-ehubo2"],
+      "downstream": [
+        "device_connectivity-ingestion-consolidation_v1",
+        "device_connectivity-ingestion-consolidation_v2",
+        "geospatial-geocoding-geo_v1",
+        "geospatial-geocoding-geo_v3",
+        "geospatial-geofencing-backend",
+        "safety-driver-overspeed",
+        "safety-driver-drive_buddy",
+        "safety-driver-scoring",
+        "safety-driver-safety_profile",
+        "safety-incident-cara",
+        "compliance-eld-myeroad",
+        "compliance-fatigue-elb",
+        "tax-ruc-ruc",
+        "tax-fuel-ftc",
+        "tax-fuel-fbt",
+        "tax-fuel-ifta",
+        "tax-weight-owmt",
+        "fleet_intel-utilisation-fleet_utilisation",
+        "fleet_intel-energy-fuel_economy",
+        "fleet_intel-sustainability-sustainability",
+        "device_connectivity-ingestion-event_forwarder"
+      ]
+    },
+    "device_connectivity-ingestion-360_pipeline": {
+      "upstream": ["device_connectivity-trailer-corehub_standard", "device_connectivity-oem-reefer_oem_integrations"],
+      "downstream": [
+        "geospatial-geocoding-ptv",
+        "safety-driver-overspeed",
+        "compliance-eld-360",
+        "compliance-fatigue-ewd",
+        "cold_chain-reefer-management",
+        "cold_chain-reefer-reports",
+        "cold_chain-reefer-alerts",
+        "cold_chain-reefer-carb",
+        "cold_chain-reefer-map",
+        "fleet_intel-utilisation-fleet_utilisation",
+        "fleet_intel-utilisation-common_reports",
+        "data_integration-operational-360_databases"
+      ]
+    },
+    "device_connectivity-ingestion-consolidation_v1": {
+      "upstream": ["device_connectivity-ingestion-myeroad_pipeline"],
+      "downstream": [
+        "fleet_intel-utilisation-fleet_utilisation",
+        "fleet_intel-energy-fuel_economy",
+        "fleet_intel-sustainability-sustainability",
+        "tax-fuel-ftc",
+        "tax-fuel-fbt",
+        "tax-fuel-ifta",
+        "tax-weight-owmt",
+        "fleet_intel-utilisation-fleet_insights"
+      ]
+    },
+    "device_connectivity-ingestion-consolidation_v2": {
+      "upstream": ["device_connectivity-ingestion-myeroad_pipeline"],
+      "downstream": [
+        "fleet_intel-utilisation-fleet_utilisation",
+        "fleet_intel-energy-fuel_economy",
+        "fleet_intel-sustainability-sustainability",
+        "tax-fuel-ftc",
+        "tax-fuel-ifta",
+        "tax-weight-owmt"
+      ]
+    },
+
+    "geospatial-geocoding-geo_v1": {
+      "upstream": ["device_connectivity-ingestion-myeroad_pipeline"],
+      "downstream": [
+        "safety-driver-overspeed",
+        "safety-driver-safety_profile",
+        "fleet_intel-utilisation-fleet_utilisation",
+        "geospatial-geofencing-backend",
+        "compliance-inspection-dvir"
+      ]
+    },
+    "geospatial-geocoding-geo_v3": {
+      "upstream": ["device_connectivity-ingestion-myeroad_pipeline"],
+      "downstream": [
+        "safety-driver-overspeed",
+        "safety-driver-safety_profile",
+        "geospatial-geofencing-backend",
+        "fleet_intel-utilisation-fleet_utilisation"
+      ]
+    },
+    "geospatial-geocoding-ptv": {
+      "upstream": ["device_connectivity-ingestion-360_pipeline"],
+      "downstream": [
+        "safety-driver-overspeed",
+        "fleet_intel-utilisation-fleet_utilisation"
+      ]
+    },
+    "geospatial-geofencing-backend": {
+      "upstream": ["geospatial-geocoding-geo_v1", "geospatial-geocoding-geo_v3"],
+      "downstream": [
+        "geospatial-geofencing-location_mgmt",
+        "notification-outbound-alerts",
+        "fleet_intel-utilisation-fleet_utilisation",
+        "tax-fuel-ftc"
+      ]
+    },
+
+    "identity-auth-sso_mfa": {
+      "upstream": [],
+      "downstream": ["__ALL_PLATFORMS__"]
+    },
+
+    "notification-outbound-alerts": {
+      "upstream": [
+        "geospatial-geofencing-backend",
+        "safety-incident-cara",
+        "cold_chain-reefer-alerts",
+        "safety-video-notifications"
+      ],
+      "downstream": [
+        "notification-outbound-email",
+        "notification-outbound-vehicle_messaging"
+      ]
+    },
+
+    "person-driver-mgmt_v1": {
+      "upstream": ["identity-auth-sso_mfa"],
+      "downstream": [
+        "compliance-eld-myeroad",
+        "compliance-eld-360",
+        "compliance-fatigue-elb",
+        "compliance-fatigue-ewd",
+        "safety-driver-scoring",
+        "safety-driver-safety_profile",
+        "safety-driver-leaderboard",
+        "compliance-inspection-dvir",
+        "mobile-test-automation"
+      ]
+    },
+    "person-driver-mgmt_v2": {
+      "upstream": ["identity-auth-sso_mfa"],
+      "downstream": [
+        "compliance-eld-myeroad",
+        "compliance-fatigue-elb",
+        "safety-driver-scoring",
+        "safety-driver-safety_profile"
+      ]
+    },
+
+    "asset-vehicle-vehicle_mgmt": {
+      "upstream": ["identity-auth-sso_mfa"],
+      "downstream": [
+        "compliance-eld-myeroad",
+        "compliance-eld-360",
+        "compliance-inspection-dvir",
+        "compliance-inspection-hired_asset",
+        "fleet_intel-maintenance-service_module",
+        "fleet_intel-maintenance-service_manager_360",
+        "cold_chain-reefer-management",
+        "asset-vehicle-device_health",
+        "asset-vehicle-trailer_mgmt",
+        "tax-ruc-ruc",
+        "tax-ruc-edr_manager"
+      ]
+    },
+    "asset-vehicle-trailer_mgmt": {
+      "upstream": ["asset-vehicle-vehicle_mgmt"],
+      "downstream": [
+        "cold_chain-reefer-management",
+        "cold_chain-reefer-reports",
+        "device_connectivity-trailer-corehub_standard"
+      ]
+    },
+
+    "safety-video-clarity_dashcam": {
+      "upstream": ["device_connectivity-in_vehicle-ehubo2"],
+      "downstream": [
+        "safety-video-replay",
+        "safety-video-notifications",
+        "safety-incident-cara"
+      ]
+    },
+    "safety-video-clarity_edge": {
+      "upstream": ["device_connectivity-in_vehicle-ehubo2"],
+      "downstream": [
+        "safety-video-replay",
+        "safety-video-fatigue_monitoring",
+        "safety-video-seat_shaker",
+        "safety-video-notifications"
+      ]
+    },
+    "safety-video-fatigue_monitoring": {
+      "upstream": ["safety-video-clarity_edge"],
+      "downstream": ["safety-video-seat_shaker", "notification-outbound-alerts"]
+    },
+
+    "compliance-eld-myeroad": {
+      "upstream": [
+        "device_connectivity-ingestion-myeroad_pipeline",
+        "person-driver-mgmt_v1",
+        "asset-vehicle-vehicle_mgmt"
+      ],
+      "downstream": [
+        "compliance-eld-prepass",
+        "data_integration-sharing-partner_apis"
+      ]
+    },
+    "compliance-eld-360": {
+      "upstream": [
+        "device_connectivity-ingestion-360_pipeline",
+        "person-driver-mgmt_v1",
+        "asset-vehicle-vehicle_mgmt"
+      ],
+      "downstream": [
+        "data_integration-sharing-partner_apis"
+      ]
+    },
+
+    "data_integration-operational-360_databases": {
+      "upstream": ["device_connectivity-ingestion-360_pipeline"],
+      "downstream": [
+        "data_integration-analytics-reporting_platform",
+        "data_integration-sharing-360_edc",
+        "fleet_intel-utilisation-fleet_utilisation",
+        "fleet_intel-utilisation-fleet_insights"
+      ]
+    },
+    "data_integration-analytics-reporting_platform": {
+      "upstream": [
+        "device_connectivity-ingestion-consolidation_v1",
+        "device_connectivity-ingestion-consolidation_v2",
+        "data_integration-operational-360_databases"
+      ],
+      "downstream": [
+        "fleet_intel-utilisation-fleet_utilisation",
+        "fleet_intel-utilisation-fleet_insights",
+        "fleet_intel-energy-fuel_economy",
+        "fleet_intel-sustainability-sustainability",
+        "fleet_intel-sustainability-decarb"
+      ]
+    },
+
+    "platform-developer-driver_mobile": {
+      "upstream": ["identity-auth-sso_mfa", "platform-developer-mobile_foundations"],
+      "downstream": [
+        "compliance-eld-myeroad",
+        "compliance-inspection-dvir",
+        "compliance-fatigue-elb",
+        "safety-driver-coaching",
+        "safety-driver-drive_buddy",
+        "geospatial-navigation-eroad_nav",
+        "notification-outbound-vehicle_messaging"
+      ]
+    },
+    "platform-developer-web_foundations": {
+      "upstream": ["identity-auth-sso_mfa"],
+      "downstream": ["__ALL_WEB_PRODUCTS__"]
+    }
+  },
+
+  "platform_map": {
+    "MyEROAD": {
+      "test_modules": ["myeroad/myeroad-e2e-tests", "myeroad/myeroad-api-support", "myeroad/eruc-web-automation"],
+      "key_systems": [
+        "compliance-eld-myeroad", "compliance-fatigue-elb", "tax-ruc-ruc", "tax-fuel-ftc",
+        "tax-fuel-fbt", "tax-fuel-ifta", "tax-weight-owmt", "person-driver-mgmt_v1",
+        "person-driver-mgmt_v2", "asset-vehicle-vehicle_mgmt", "geospatial-geocoding-geo_v1",
+        "geospatial-geocoding-geo_v3", "geospatial-geofencing-backend",
+        "device_connectivity-ingestion-myeroad_pipeline", "safety-driver-overspeed",
+        "safety-driver-safety_profile", "notification-outbound-vehicle_messaging",
+        "safety-video-clarity_dashcam", "safety-video-clarity_edge", "safety-video-replay"
+      ]
+    },
+    "Coretex360": {
+      "test_modules": ["core360/web-automation", "core360/core360-api-support"],
+      "key_systems": [
+        "compliance-eld-360", "compliance-fatigue-ewd", "cold_chain-reefer-management",
+        "cold_chain-reefer-coretemp", "cold_chain-reefer-reports", "cold_chain-reefer-alerts",
+        "geospatial-geocoding-ptv", "device_connectivity-ingestion-360_pipeline",
+        "data_integration-operational-360_databases", "asset-vehicle-vehicle_mgmt",
+        "person-driver-mgmt_v1", "safety-driver-overspeed", "compliance-inspection-dvir"
+      ]
+    },
+    "Drive (Mobile)": {
+      "test_modules": ["mobile-test-automation"],
+      "key_systems": [
+        "compliance-eld-myeroad", "compliance-inspection-dvir", "compliance-fatigue-elb",
+        "safety-driver-coaching", "safety-driver-drive_buddy", "geospatial-navigation-eroad_nav",
+        "notification-outbound-vehicle_messaging", "device_connectivity-in_vehicle-ehubo2",
+        "platform-developer-driver_mobile", "asset-vehicle-trailer_mgmt"
+      ]
+    },
+    "eRUC (Mobile)": {
+      "test_modules": ["myeroad/eruc-web-automation"],
+      "key_systems": ["tax-ruc-eruc_b2c", "tax-ruc-ruc", "tax-ruc-edr_manager"]
+    }
+  },
+
+  "team_map": {
+    "Video Safety": {
+      "tribe": "Safety",
+      "systems": ["safety-video-clarity_dashcam", "safety-video-clarity_edge", "safety-video-clarity_edge_multi_cam", "safety-video-replay", "safety-video-fatigue_monitoring", "safety-video-seat_shaker", "safety-video-notifications"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "Driver Performance": {
+      "tribe": "Safety",
+      "systems": ["safety-driver-drive_buddy", "safety-driver-scoring", "safety-driver-coaching", "safety-driver-leaderboard", "safety-driver-overspeed", "safety-driver-safety_profile"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation", "mobile-test-automation"]
+    },
+    "DiME": {
+      "tribe": "Compliance",
+      "systems": ["compliance-eld-myeroad", "compliance-eld-360", "compliance-eld-prepass"],
+      "test_modules": ["mobile-test-automation", "myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "EPOD & Route Management": {
+      "tribe": "Compliance",
+      "systems": ["compliance-dispatch-route_manager", "compliance-dispatch-route_inspector", "compliance-dispatch-epod"],
+      "test_modules": []
+    },
+    "Global Tax": {
+      "tribe": "Compliance",
+      "systems": ["tax-ruc-ruc", "tax-ruc-eruc_b2c", "tax-ruc-edr_manager", "tax-weight-owmt", "tax-weight-irp", "tax-fuel-ftc", "tax-fuel-fbt", "tax-fuel-ifta", "tax-fuel-fuel_card", "tax-sharing-bookit"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "myeroad/eruc-web-automation"]
+    },
+    "Refrigerated Load Management": {
+      "tribe": "Cold Chain",
+      "systems": ["cold_chain-reefer-coretemp", "cold_chain-reefer-management", "cold_chain-reefer-reports", "cold_chain-reefer-alerts", "cold_chain-reefer-carb", "cold_chain-reefer-map", "cold_chain-reefer-api", "cold_chain-reefer-mobile", "cold_chain-reefer-settings", "cold_chain-reefer-electric", "cold_chain-reefer-pct"],
+      "test_modules": ["core360/web-automation"]
+    },
+    "Geospatial Services": {
+      "tribe": "Sustain",
+      "systems": ["geospatial-geocoding-geo_v1", "geospatial-geocoding-geo_v3", "geospatial-geocoding-ptv", "geospatial-geofencing-backend", "geospatial-geofencing-location_mgmt"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "Telematics Ingestion": {
+      "tribe": "Sustain",
+      "systems": ["device_connectivity-ingestion-360_pipeline", "device_connectivity-ingestion-myeroad_pipeline", "device_connectivity-ingestion-consolidation_v1", "device_connectivity-ingestion-consolidation_v2", "device_connectivity-ingestion-event_forwarder"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "Data Platform": {
+      "tribe": "Sustain / Core & Data",
+      "systems": ["person-driver-mgmt_v1", "person-driver-mgmt_v2", "asset-vehicle-vehicle_mgmt", "asset-vehicle-device_health", "asset-vehicle-attributes", "asset-vehicle-trailer_mgmt", "customer-organisation-user_mgmt", "data_integration-analytics-reporting_platform"],
+      "test_modules": ["myeroad/myeroad-e2e-tests", "core360/web-automation"]
+    },
+    "CoreHub & Sensor": {
+      "tribe": "Devices",
+      "systems": ["device_connectivity-trailer-corehub_standard", "device_connectivity-trailer-corehub_trailer", "device_connectivity-trailer-sensors", "device_connectivity-trailer-sensor_ux", "device_connectivity-operations-installer_app", "device_connectivity-operations-support_panel"],
+      "test_modules": ["mobile-test-automation"]
+    },
+    "Fleet Team": {
+      "tribe": "Sustain",
+      "systems": ["notification-outbound-alerts", "notification-outbound-email", "notification-outbound-vehicle_messaging", "fleet_intel-utilisation-fleet_utilisation", "fleet_intel-energy-fuel_economy"],
+      "test_modules": ["myeroad/myeroad-e2e-tests"]
+    }
+  },
+
+  "impact_matrix": {
+    "_note": "When a Jira ticket touches system X, these are the additional areas that should be considered for regression testing.",
+    "device_connectivity-ingestion-myeroad_pipeline": {
+      "risk": "CRITICAL",
+      "rationale": "Foundation of all MyEROAD product data. Any change here can break ALL MyEROAD features that consume telematics.",
+      "test_scope": ["myeroad/myeroad-e2e-tests", "mobile-test-automation"],
+      "regression_tags": ["@Regression", "@E2E", "@smoke"]
+    },
+    "device_connectivity-ingestion-360_pipeline": {
+      "risk": "CRITICAL",
+      "rationale": "Foundation of all Coretex 360 product data.",
+      "test_scope": ["core360/web-automation"],
+      "regression_tags": ["@Regression", "@Smoke"]
+    },
+    "identity-auth-sso_mfa": {
+      "risk": "CRITICAL",
+      "rationale": "Auth is a prerequisite for all products. Any change breaks login across all platforms.",
+      "test_scope": ["myeroad/myeroad-e2e-tests", "core360/web-automation", "mobile-test-automation"],
+      "regression_tags": ["@Regression", "@Smoke", "@signin"]
+    },
+    "person-driver-mgmt_v1": {
+      "risk": "HIGH",
+      "rationale": "Driver entity is consumed by ELD, HOS, safety scoring, DVIR, and mobile Drive app.",
+      "test_scope": ["myeroad/myeroad-e2e-tests", "core360/web-automation", "mobile-test-automation"],
+      "regression_tags": ["@Regression", "@signin", "@dvir", "@logs"]
+    },
+    "person-driver-mgmt_v2": {
+      "risk": "HIGH",
+      "rationale": "Replacement for V1 on MyEROAD. Changes affect ELD and driver safety products.",
+      "test_scope": ["myeroad/myeroad-e2e-tests"],
+      "regression_tags": ["@Regression"]
+    },
+    "asset-vehicle-vehicle_mgmt": {
+      "risk": "HIGH",
+      "rationale": "Vehicle entity consumed by ELD, DVIR, reefer, fleet intel, and RUC.",
+      "test_scope": ["myeroad/myeroad-e2e-tests", "core360/web-automation", "mobile-test-automation"],
+      "regression_tags": ["@Regression", "@vehicle", "@dvir"]
+    },
+    "geospatial-geocoding-geo_v1": {
+      "risk": "HIGH",
+      "rationale": "Provides location context to most MyEROAD products. Overspeed, reports, fleet intel all depend on it.",
+      "test_scope": ["myeroad/myeroad-e2e-tests"],
+      "regression_tags": ["@Regression"]
+    },
+    "geospatial-geocoding-geo_v3": {
+      "risk": "HIGH",
+      "rationale": "Replacing V1 — parallel rollout means regressions in both must be caught.",
+      "test_scope": ["myeroad/myeroad-e2e-tests"],
+      "regression_tags": ["@Regression"]
+    },
+    "geospatial-geofencing-backend": {
+      "risk": "HIGH",
+      "rationale": "Entry/exit detection feeds notifications, fleet reporting, and tax (off-road detection).",
+      "test_scope": ["myeroad/myeroad-e2e-tests"],
+      "regression_tags": ["@Regression"]
+    },
+    "compliance-eld-myeroad": {
+      "risk": "HIGH",
+      "rationale": "FMCSA regulated. Changes require thorough ELD compliance testing per ELD rule.",
+      "test_scope": ["mobile-test-automation", "myeroad/myeroad-e2e-tests"],
+      "regression_tags": ["@Regression", "@eldFunc4614_5", "@eldFunc4614_6", "@eldFunc4614_9", "@eldFunc433126", "@logs", "@certify", "@status"]
+    },
+    "notification-outbound-alerts": {
+      "risk": "MEDIUM",
+      "rationale": "Cross-cutting — consumed by safety, reefer, and geofence alerts.",
+      "test_scope": ["myeroad/myeroad-e2e-tests", "core360/web-automation"],
+      "regression_tags": ["@Regression", "@Notifications"]
+    },
+    "platform-developer-driver_mobile": {
+      "risk": "HIGH",
+      "rationale": "Mobile shell used by Drive app — changes affect ELD, DVIR, fatigue, messaging.",
+      "test_scope": ["mobile-test-automation"],
+      "regression_tags": ["@Regression", "@smoke", "@signin", "@status"]
+    },
+    "device_connectivity-ingestion-consolidation_v1": {
+      "risk": "HIGH",
+      "rationale": "Nightly aggregation feeds all MyEROAD reports and tax products. Silent failures hard to detect.",
+      "test_scope": ["myeroad/myeroad-e2e-tests"],
+      "regression_tags": ["@Regression"]
+    },
+    "data_integration-operational-360_databases": {
+      "risk": "HIGH",
+      "rationale": "Underpins all 360 reporting, EDC, and analytics. Schema changes cascade broadly.",
+      "test_scope": ["core360/web-automation"],
+      "regression_tags": ["@Regression", "@db"]
+    },
+    "safety-video-clarity_edge": {
+      "risk": "MEDIUM",
+      "rationale": "Feeds replay, fatigue monitoring, seat shaker. API changes affect dashcam replay service.",
+      "test_scope": ["myeroad/myeroad-e2e-tests"],
+      "regression_tags": ["@Regression", "@mediaService", "@DRP-WalkieTalkie"]
+    },
+    "cold_chain-reefer-management": {
+      "risk": "MEDIUM",
+      "rationale": "Primary reefer view depends on ingestion pipeline and OEM integrations.",
+      "test_scope": ["core360/web-automation"],
+      "regression_tags": ["@Regression"]
+    }
+  },
+
+  "search_aliases": {
+    "_note": "Use these to map common Jira terms/labels to system keys when ticket text is ambiguous.",
+    "Drive": "platform-developer-driver_mobile",
+    "ELD": ["compliance-eld-myeroad", "compliance-eld-360"],
+    "HOS": ["compliance-eld-myeroad", "compliance-eld-360"],
+    "DIME": ["compliance-eld-myeroad", "compliance-eld-360"],
+    "dashcam": ["safety-video-clarity_dashcam", "safety-video-clarity_edge"],
+    "replay": "safety-video-replay",
+    "Clarity": ["safety-video-clarity_dashcam", "safety-video-clarity_edge"],
+    "Clarity Edge": "safety-video-clarity_edge",
+    "CARA": "safety-incident-cara",
+    "fatigue": ["safety-video-fatigue_monitoring", "safety-driver-drive_buddy", "compliance-fatigue-ewd", "compliance-fatigue-elb"],
+    "RUC": "tax-ruc-ruc",
+    "eRUC": "tax-ruc-eruc_b2c",
+    "IFTA": "tax-fuel-ifta",
+    "FTC": "tax-fuel-ftc",
+    "FBT": "tax-fuel-fbt",
+    "OWMT": "tax-weight-owmt",
+    "reefer": ["cold_chain-reefer-management", "cold_chain-reefer-coretemp"],
+    "CoreTemp": "cold_chain-reefer-coretemp",
+    "geofence": "geospatial-geofencing-backend",
+    "geocoding": ["geospatial-geocoding-geo_v1", "geospatial-geocoding-geo_v3"],
+    "geo v1": "geospatial-geocoding-geo_v1",
+    "geo v3": "geospatial-geocoding-geo_v3",
+    "navigation": "geospatial-navigation-eroad_nav",
+    "CoPilot": "geospatial-navigation-copilot",
+    "DVIR": "compliance-inspection-dvir",
+    "Inspect": "compliance-inspection-hired_asset",
+    "CARB": ["compliance-inspection-carb", "cold_chain-reefer-carb"],
+    "EWD": "compliance-fatigue-ewd",
+    "ELB": "compliance-fatigue-elb",
+    "logbook": "compliance-fatigue-elb",
+    "ingestion": ["device_connectivity-ingestion-myeroad_pipeline", "device_connectivity-ingestion-360_pipeline"],
+    "consolidation": ["device_connectivity-ingestion-consolidation_v1", "device_connectivity-ingestion-consolidation_v2"],
+    "EHUBO": "device_connectivity-in_vehicle-ehubo2",
+    "CoreHub": "device_connectivity-trailer-corehub_standard",
+    "driver management": ["person-driver-mgmt_v1", "person-driver-mgmt_v2"],
+    "vehicle management": "asset-vehicle-vehicle_mgmt",
+    "SSO": "identity-auth-sso_mfa",
+    "MFA": "identity-auth-sso_mfa",
+    "authentication": "identity-auth-sso_mfa",
+    "messaging": "notification-outbound-vehicle_messaging",
+    "notification": "notification-outbound-alerts",
+    "CIP": "data_integration-sharing-cip",
+    "EDC": "data_integration-sharing-360_edc",
+    "Geotab": "data_integration-sharing-geotab",
+    "fleet utilisation": "fleet_intel-utilisation-fleet_utilisation",
+    "sustainability": "fleet_intel-sustainability-sustainability",
+    "emissions": "fleet_intel-sustainability-decarb",
+    "maintenance": ["fleet_intel-maintenance-service_module", "fleet_intel-maintenance-service_manager_360"],
+    "trailer": "asset-vehicle-trailer_mgmt",
+    "BookIt": "tax-sharing-bookit",
+    "Route Manager": "compliance-dispatch-route_manager",
+    "ePOD": "compliance-dispatch-epod",
+    "driver scoring": "safety-driver-scoring",
+    "driver leaderboard": "safety-driver-leaderboard",
+    "overspeed": "safety-driver-overspeed",
+    "safety profile": "safety-driver-safety_profile"
+  }
+}
+

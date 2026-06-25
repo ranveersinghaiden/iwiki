@@ -26,6 +26,7 @@ from app.db import expert_repository
 from app.rag.answer_generator import Answer, Source, generate_answer
 from app.search.embedder import QueryEmbedder
 from app.search.hybrid_search import hybrid_search
+from app.search.reranker import rerank
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -92,16 +93,22 @@ async def query_knowledge_base(
     embedder = QueryEmbedder()
     query_vec = await embedder.embed(request.query)
 
+    # Pull a wider candidate pool than requested so the reranker has room to work,
+    # then rerank down to the caller's top_k.
+    pool_size = max(request.top_k, settings.rerank_candidate_pool)
+
     async with AsyncSessionFactory() as session:
-        results = await hybrid_search(
+        candidates = await hybrid_search(
             session,
             query_embedding=query_vec,
             query_text=request.query,
             allowed_spaces=allowed_spaces,
             allowed_projects=allowed_projects,
             product_filter=x_product_filter,
-            top_k=request.top_k,
+            top_k=pool_size,
         )
+
+    results = await rerank(request.query, candidates, top_k=request.top_k)
 
     answer: Answer = await generate_answer(request.query, results)
 
@@ -185,13 +192,14 @@ def _parse_header_list(header: str | None) -> list[str] | None:
 
 
 def _source_to_response(s: Source) -> SourceResponse:
+    relevance = s.rerank_score if s.rerank_score is not None else s.rrf_score
     return SourceResponse(
         title=s.title,
         source_type=s.source_type,
         source_id=s.source_id,
         source_url=s.source_url,
         product_hierarchy=s.product_hierarchy,
-        relevance_score=round(s.rrf_score, 4),
+        relevance_score=round(relevance, 4),
     )
 
 

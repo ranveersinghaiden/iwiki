@@ -35,7 +35,7 @@ RAG-based internal knowledge search platform. Hybrid vector + full-text search �
 │  └────────────────────────────────────┘  │
 │  ┌────────────────────────────────────┐  │
 │  │ 5. Classify: product hierarchy     │  │
-│  │    - LLM-free (text rules)         │  │
+│  │    - rule/embed/LLM cascade        │  │
 │  │    - assign product/feature        │  │
 │  └────────────────────────────────────┘  │
 │  ┌────────────────────────────────────┐  │
@@ -228,20 +228,32 @@ Convert text → dense vectors (1536-dim or custom):
 
 #### 5. Classify Phase
 
-Assign product/feature labels (no LLM cost):
+Assign `{product, feature, component}` plus a `confidence` and `method`, using a
+cheapest-first cascade (stops at the first confident stage):
 
-- Read `product_hierarchy.yaml` at startup
-- Simple text rules: keyword matching on chunk_text + metadata
-- Example rule:
-  ```yaml
-  products:
-    - name: "Payments"
-      features:
-        - name: "Checkout"
-          keywords: ["checkout", "payment flow", "3DS"]
-  ```
-- Fallback: assign `product: "Other"` if no match
-- LLM-free by design (fast + predictable + no API cost)
+1. **Rule** — keyword/alias hits derived from `product_hierarchy.yaml`
+   (deterministic, free, no network). Accepts when the keyword score clears
+   `CLASSIFICATION_RULE_MIN_SCORE`.
+2. **Semantic** — embedding cosine similarity of the document against each node
+   label; accepts above `CLASSIFICATION_SEMANTIC_THRESHOLD`. One embed call,
+   node-label embeddings are cached.
+3. **LLM** — full LLM classification for ambiguous/low-signal docs; the result
+   is validated against the taxonomy (a feature must belong to its product, a
+   component to its feature).
+
+```yaml
+products:
+  - name: "Payments"
+    features:
+      - name: "Checkout"
+        aliases: ["payment flow"]   # optional — boosts rule recall
+        keywords: ["3DS", "checkout"]
+```
+
+- Fallback: `product: "General"`, `feature: "Uncategorized"` if nothing fits.
+- Every result records a `confidence` (0-1) and a `needs_review` flag
+  (`confidence < CLASSIFICATION_REVIEW_THRESHOLD`) so low-confidence docs can be
+  triaged instead of silently trusted.
 
 #### 6. Upsert Phase
 
@@ -336,6 +348,21 @@ top_5 = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)[:5]
 - Vectors excel at semantic similarity (e.g., "payment handling" ≈ "checkout")
 - BM25 excels at exact terms (e.g., "3DS2", "API key")
 - Fusing both → robust to query phrasing variations
+
+#### 2.5 Reranking
+
+A candidate pool (`RERANK_CANDIDATE_POOL`, default 20) is fetched from hybrid
+search, then re-scored before the top-`k` reaches the RAG step:
+
+- **Signal blend** (always on) — weighted sum of normalized RRF score,
+  freshness (exponential decay, `RERANK_FRESHNESS_HALF_LIFE_DAYS`), source
+  authority (Confluence > Jira > default), and taxonomy match vs the query.
+  Weights are configurable (`RERANK_WEIGHT_*`).
+- **LLM rerank** (optional, `RERANK_LLM_ENABLED`) — reorders the top
+  `RERANK_LLM_TOP_N` via the chat model. Degrades gracefully: any parse/transport
+  failure falls back to the signal-blend order, so retrieval never hard-fails.
+
+The chosen `rerank_score` replaces `rrf_score` as the surfaced `relevance_score`.
 
 #### 3. Permission Filtering
 
@@ -683,7 +710,8 @@ SELECT * FROM pg_stat_user_indexes LIMIT 5;  -- index usage stats
 ## Future Enhancements
 
 1. **Event-driven ingestion:** Jira/Confluence webhooks → real-time updates
-2. **Reranking:** cross-encoder to re-rank hybrid results
+2. **Reranking:** cross-encoder / learning-to-rank to replace the current
+   signal-blend + LLM reranker (needs labeled click/feedback data)
 3. **Streaming responses:** LLM output → chunked HTTP
 4. **Caching layer:** Redis cache for common queries
 5. **Analytics:** track query performance + user satisfaction

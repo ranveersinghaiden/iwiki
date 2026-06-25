@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import text
@@ -35,6 +36,9 @@ class SearchResult:
     source_type: str
     source_id: str
     product_hierarchy: dict[str, Any]
+    source_updated_at: datetime | None = None
+    # Set by the reranker (blended signal score); falls back to rrf_score when unset.
+    rerank_score: float | None = None
 
 
 _HYBRID_SQL_TMPL = """
@@ -85,7 +89,8 @@ SELECT
     d.source_url,
     d.source_type,
     d.source_id,
-    d.product_hierarchy
+    d.product_hierarchy,
+    d.source_updated_at
 FROM rrf_scores r
 JOIN chunks   c ON r.chunk_id   = c.id
 JOIN documents d ON c.document_id = d.id
@@ -163,6 +168,7 @@ async def hybrid_search(
             source_type=row[6],
             source_id=row[7],
             product_hierarchy=row[8] or {},
+            source_updated_at=row[9],
         )
         for row in rows
     ]

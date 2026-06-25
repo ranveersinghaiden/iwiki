@@ -19,6 +19,7 @@ import hashlib
 import json
 import math
 import random
+import re
 from typing import Any
 
 import uvicorn
@@ -93,6 +94,18 @@ def _expert_response(user_msg: str) -> str:
     return json.dumps(expert)
 
 
+def _rerank_response(user_msg: str) -> str:
+    """Return a valid JSON index ordering for the reranker prompt.
+
+    Echoes identity order (0..n-1) — enough to exercise the parse/apply path
+    without perturbing order-independent E2E assertions.
+    """
+    match = re.search(r"indices \(0 to (\d+)\)", user_msg)
+    if match:
+        return json.dumps(list(range(int(match.group(1)) + 1)))
+    return json.dumps([int(x) for x in re.findall(r"\[(\d+)\]", user_msg)])
+
+
 @app.post("/v1/embeddings")
 async def embeddings(request: Request) -> JSONResponse:
     body: dict[str, Any] = await request.json()
@@ -128,6 +141,9 @@ async def chat_completions(request: Request) -> JSONResponse:
     # Detect expert synthesis requests — return structured JSON
     if "synthesising expert knowledge for the product:" in user_msg:
         content = _expert_response(user_msg)
+    # Detect reranker requests — return a JSON index ordering
+    elif "You are a precise search result reranker." in user_msg:
+        content = _rerank_response(user_msg)
     # Detect classification requests — return product hierarchy JSON
     elif "Classify this document into the hierarchy" in user_msg:
         content = _classification_response(user_msg)

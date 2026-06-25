@@ -35,6 +35,7 @@ class Source:
     source_url: str | None
     product_hierarchy: dict[str, Any]
     rrf_score: float
+    rerank_score: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,6 +78,7 @@ async def generate_answer(
                     source_url=r.source_url,
                     product_hierarchy=r.product_hierarchy,
                     rrf_score=r.rrf_score,
+                    rerank_score=r.rerank_score,
                 )
             )
 
