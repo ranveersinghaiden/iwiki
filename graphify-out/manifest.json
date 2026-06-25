@@ -1,0 +1,392 @@
+{
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.agents/knowledge/product-map.json": {
+    "mtime": 1782352751.7622788,
+    "ast_hash": "162eb465d0de684f0739072f36b5670b",
+    "semantic_hash": "162eb465d0de684f0739072f36b5670b"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/db/init.sql": {
+    "mtime": 1782378929.546724,
+    "ast_hash": "ed53cb00ab0d1ecd06f0741fd4df5e60",
+    "semantic_hash": "ed53cb00ab0d1ecd06f0741fd4df5e60"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/__init__.py": {
+    "mtime": 1781566784.1462266,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/api/__init__.py": {
+    "mtime": 1781566797.1361625,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/api/routes.py": {
+    "mtime": 1781589638.5437787,
+    "ast_hash": "184827bedb08f42e6d521d23d54c290d",
+    "semantic_hash": "184827bedb08f42e6d521d23d54c290d"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/clients/__init__.py": {
+    "mtime": 1781566787.3836813,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/clients/confluence_client.py": {
+    "mtime": 1781566702.9959848,
+    "ast_hash": "4975da05de2f83869e43b2b01449971a",
+    "semantic_hash": "4975da05de2f83869e43b2b01449971a"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/clients/jira_client.py": {
+    "mtime": 1781566686.9197688,
+    "ast_hash": "95ce21ac7e5dc0dc4a3ef2053cff3c5a",
+    "semantic_hash": "95ce21ac7e5dc0dc4a3ef2053cff3c5a"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/config.py": {
+    "mtime": 1782374907.3793395,
+    "ast_hash": "3988246117df1399717a1d2b6d8f88b9",
+    "semantic_hash": "3988246117df1399717a1d2b6d8f88b9"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/db/__init__.py": {
+    "mtime": 1781566793.852324,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/db/database.py": {
+    "mtime": 1781566634.9110262,
+    "ast_hash": "0b259d7d609de41ad7653de0e81f6f1a",
+    "semantic_hash": "0b259d7d609de41ad7653de0e81f6f1a"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/db/models.py": {
+    "mtime": 1781585077.8912816,
+    "ast_hash": "1adc6ab9d3bdfa3dd7ece58223a9a045",
+    "semantic_hash": "1adc6ab9d3bdfa3dd7ece58223a9a045"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/db/repository.py": {
+    "mtime": 1782379880.457645,
+    "ast_hash": "5d4c3876b9f409ad61183d9a5132f36a",
+    "semantic_hash": "5d4c3876b9f409ad61183d9a5132f36a"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/pipeline/__init__.py": {
+    "mtime": 1781566790.7481794,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/pipeline/chunker.py": {
+    "mtime": 1781567725.8058138,
+    "ast_hash": "c909ead17c7c1640aa706393816a2868",
+    "semantic_hash": "c909ead17c7c1640aa706393816a2868"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/pipeline/classifier.py": {
+    "mtime": 1782376708.2619781,
+    "ast_hash": "4ecf7f0c2898f317b05d70eb7d9a0a4c",
+    "semantic_hash": "4ecf7f0c2898f317b05d70eb7d9a0a4c"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/pipeline/cleaner.py": {
+    "mtime": 1781566711.8425617,
+    "ast_hash": "937e820ecfb36e2549ba87b69a3b51bc",
+    "semantic_hash": "937e820ecfb36e2549ba87b69a3b51bc"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/pipeline/embedder.py": {
+    "mtime": 1781566728.357221,
+    "ast_hash": "4b814752a1cfb749606a13e967733c96",
+    "semantic_hash": "4b814752a1cfb749606a13e967733c96"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/pipeline/expert_refresher.py": {
+    "mtime": 1781585136.7896688,
+    "ast_hash": "17c33af689d7199227d496c666c0b531",
+    "semantic_hash": "17c33af689d7199227d496c666c0b531"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/app/pipeline/ingestion_pipeline.py": {
+    "mtime": 1781585155.2313228,
+    "ast_hash": "d39eaac8f35645a6b652991e48eb5b38",
+    "semantic_hash": "d39eaac8f35645a6b652991e48eb5b38"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/main.py": {
+    "mtime": 1781566618.6263275,
+    "ast_hash": "78a57be6cf321b4d37250af8e72646a8",
+    "semantic_hash": "78a57be6cf321b4d37250af8e72646a8"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/__init__.py": {
+    "mtime": 1781566881.776484,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/api/__init__.py": {
+    "mtime": 1781566895.1480062,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/api/routes.py": {
+    "mtime": 1782375010.510982,
+    "ast_hash": "b267a2e56f9a75eb41c92f6578d09cb1",
+    "semantic_hash": "b267a2e56f9a75eb41c92f6578d09cb1"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/config.py": {
+    "mtime": 1782374943.2997668,
+    "ast_hash": "db788d4a4721a4f6a46c3ebbbe948051",
+    "semantic_hash": "db788d4a4721a4f6a46c3ebbbe948051"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/db/__init__.py": {
+    "mtime": 1781566885.4379854,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/db/database.py": {
+    "mtime": 1781566823.242602,
+    "ast_hash": "0b259d7d609de41ad7653de0e81f6f1a",
+    "semantic_hash": "0b259d7d609de41ad7653de0e81f6f1a"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/db/expert_repository.py": {
+    "mtime": 1781585198.768852,
+    "ast_hash": "0583f3e76fb7becaf45c9661c56063b3",
+    "semantic_hash": "0583f3e76fb7becaf45c9661c56063b3"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/rag/__init__.py": {
+    "mtime": 1781566891.9614003,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/rag/answer_generator.py": {
+    "mtime": 1782375019.5894737,
+    "ast_hash": "da0fffc3c85bac14f3b8062ca33d3525",
+    "semantic_hash": "da0fffc3c85bac14f3b8062ca33d3525"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/search/__init__.py": {
+    "mtime": 1781566888.7120159,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/search/embedder.py": {
+    "mtime": 1781566829.0169454,
+    "ast_hash": "c6da37ba01cf4d89afcf9727b8f66d91",
+    "semantic_hash": "c6da37ba01cf4d89afcf9727b8f66d91"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/search/hybrid_search.py": {
+    "mtime": 1782374932.805372,
+    "ast_hash": "6f56bda85bc131b3e918d773b42de6fc",
+    "semantic_hash": "6f56bda85bc131b3e918d773b42de6fc"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/app/search/reranker.py": {
+    "mtime": 1782376708.306279,
+    "ast_hash": "1a028777daaafb7a2908f6d89018e31d",
+    "semantic_hash": "1a028777daaafb7a2908f6d89018e31d"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/main.py": {
+    "mtime": 1781566811.031037,
+    "ast_hash": "58c284c42607b7284682ea33b2a2e26f",
+    "semantic_hash": "58c284c42607b7284682ea33b2a2e26f"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/tests/e2e/run_e2e.sh": {
+    "mtime": 1781597832.035737,
+    "ast_hash": "a925df1cc678d6518b551e8b4f294f52",
+    "semantic_hash": "a925df1cc678d6518b551e8b4f294f52"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/tests/e2e/stub_openai.py": {
+    "mtime": 1782375048.76639,
+    "ast_hash": "ac015003d63223b51347bea0b2eb77b1",
+    "semantic_hash": "ac015003d63223b51347bea0b2eb77b1"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/tests/e2e/write_e2e.py": {
+    "mtime": 1781590278.0713484,
+    "ast_hash": "1966e561feb6765e7569f698673ffd2b",
+    "semantic_hash": "1966e561feb6765e7569f698673ffd2b"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.agents/skills/caveman/README.md": {
+    "mtime": 1781558999.496682,
+    "ast_hash": "72a5c06aa99126d55573e87721c37ab4",
+    "semantic_hash": "72a5c06aa99126d55573e87721c37ab4"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.agents/skills/caveman/SKILL.md": {
+    "mtime": 1781558999.4967813,
+    "ast_hash": "893def771b2c8653b3ee9ea781d6d614",
+    "semantic_hash": "893def771b2c8653b3ee9ea781d6d614"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/CHECKLISTS.md": {
+    "mtime": 1781580559.7599614,
+    "ast_hash": "eb678565761ce3880713430e88f7e811",
+    "semantic_hash": "eb678565761ce3880713430e88f7e811"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/COMPRESSION-REPORT.md": {
+    "mtime": 1781580662.0,
+    "ast_hash": "5f5c0aa0345c281b360d6a8a6f76dfaa",
+    "semantic_hash": "5f5c0aa0345c281b360d6a8a6f76dfaa"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/CodeReviewer.agent.md": {
+    "mtime": 1781558452.3715158,
+    "ast_hash": "1dc190c99fcbf16079438e07717e4ba3",
+    "semantic_hash": "1dc190c99fcbf16079438e07717e4ba3"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/Conductor.agent.md": {
+    "mtime": 1781590405.1402645,
+    "ast_hash": "a9d2ca3828974621f10e4f6c863d92be",
+    "semantic_hash": "a9d2ca3828974621f10e4f6c863d92be"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/Documentation.agent.md": {
+    "mtime": 1781579966.809421,
+    "ast_hash": "83b55f21bf14c0a0e44daa9424049e89",
+    "semantic_hash": "83b55f21bf14c0a0e44daa9424049e89"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/GenericCodingPractices.md": {
+    "mtime": 1781581146.7203205,
+    "ast_hash": "7728f92524c689dcdf2f89433ebc0d7d",
+    "semantic_hash": "7728f92524c689dcdf2f89433ebc0d7d"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/JAVA-CODER.md": {
+    "mtime": 1781582067.81113,
+    "ast_hash": "b859377f3fa70d26d3843611b02063f2",
+    "semantic_hash": "b859377f3fa70d26d3843611b02063f2"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/JavaCoder.agent.md": {
+    "mtime": 1781581161.2811472,
+    "ast_hash": "7054f15317c21ee89abb8050af4e9aa1",
+    "semantic_hash": "7054f15317c21ee89abb8050af4e9aa1"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/MCP-SERVERS.md": {
+    "mtime": 1781582085.546069,
+    "ast_hash": "b6f66051b7aae471ec8209c052b35790",
+    "semantic_hash": "b6f66051b7aae471ec8209c052b35790"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/PythonCoder.agent.md": {
+    "mtime": 1781581182.1333487,
+    "ast_hash": "53815780829f055048294b1574c24a0c",
+    "semantic_hash": "53815780829f055048294b1574c24a0c"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/README.md": {
+    "mtime": 1781581229.6689563,
+    "ast_hash": "e405093a3bfd564760b8899321583c86",
+    "semantic_hash": "e405093a3bfd564760b8899321583c86"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/SHARED-RULES.md": {
+    "mtime": 1781580522.6603494,
+    "ast_hash": "b7dca55be012f1e79ef6833af5db3617",
+    "semantic_hash": "b7dca55be012f1e79ef6833af5db3617"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/Security.agent.md": {
+    "mtime": 1781216727.002427,
+    "ast_hash": "9cd72ea972676d3876f15a73d5c750fe",
+    "semantic_hash": "9cd72ea972676d3876f15a73d5c750fe"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/TESTING-STANDARDS.md": {
+    "mtime": 1781582107.6244056,
+    "ast_hash": "c3817bd173eedb0b2a838e2ba5666c18",
+    "semantic_hash": "c3817bd173eedb0b2a838e2ba5666c18"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/TestPlanner.agent.md": {
+    "mtime": 1780961231.9979203,
+    "ast_hash": "1cde9b33f43eb0113cc8f07437739402",
+    "semantic_hash": "1cde9b33f43eb0113cc8f07437739402"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/agents/Tester.agent.md": {
+    "mtime": 1779435335.7703812,
+    "ast_hash": "042af02986bafeea3d772329124de9b5",
+    "semantic_hash": "042af02986bafeea3d772329124de9b5"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/copilot-instructions.md": {
+    "mtime": 1782373055.543265,
+    "ast_hash": "7d34636b3669b64744cd0ead8463a256",
+    "semantic_hash": "7d34636b3669b64744cd0ead8463a256"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/java/coding-conventions.md": {
+    "mtime": 1780960596.6000214,
+    "ast_hash": "f7fb9b1ba0192af2d92b30772897d760",
+    "semantic_hash": "f7fb9b1ba0192af2d92b30772897d760"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/java/error-handling.md": {
+    "mtime": 1780960198.4736288,
+    "ast_hash": "ae704dd85a25b96f968b00340bae1f53",
+    "semantic_hash": "ae704dd85a25b96f968b00340bae1f53"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/java/logging.md": {
+    "mtime": 1780960178.6492832,
+    "ast_hash": "c8b83aef09a540c047a3cbe91731e2f9",
+    "semantic_hash": "c8b83aef09a540c047a3cbe91731e2f9"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/mcp/server-setup.md": {
+    "mtime": 1780960311.2307067,
+    "ast_hash": "facd63808ecd9886c5572d43267717cc",
+    "semantic_hash": "facd63808ecd9886c5572d43267717cc"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/mcp/tool-authoring.md": {
+    "mtime": 1780960351.1136215,
+    "ast_hash": "6c1b665d58baaf20a788aa2f9ddbce24",
+    "semantic_hash": "6c1b665d58baaf20a788aa2f9ddbce24"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/spring/dependency-injection.md": {
+    "mtime": 1780960249.0383954,
+    "ast_hash": "2c27ae7eb0bf76b5df1a2d2697e4248a",
+    "semantic_hash": "2c27ae7eb0bf76b5df1a2d2697e4248a"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/spring/kafka.md": {
+    "mtime": 1780960269.3208385,
+    "ast_hash": "6416fa290703c876983ca008aafb33a7",
+    "semantic_hash": "6416fa290703c876983ca008aafb33a7"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/spring/redis.md": {
+    "mtime": 1780960287.73,
+    "ast_hash": "3075a7f287831931178abedcea46f67b",
+    "semantic_hash": "3075a7f287831931178abedcea46f67b"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/instructions/testing/zero-mock-policy.md": {
+    "mtime": 1780960224.335393,
+    "ast_hash": "d33645594d719844964142a45615b9d1",
+    "semantic_hash": "d33645594d719844964142a45615b9d1"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/workflows/deploy-all.yml": {
+    "mtime": 1781585297.8390486,
+    "ast_hash": "32dcf6bba7ef0e44da917c6c42e95674",
+    "semantic_hash": "32dcf6bba7ef0e44da917c6c42e95674"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/workflows/deploy-ingestion.yml": {
+    "mtime": 1781585260.0920856,
+    "ast_hash": "14a7208369d4ab7ad600cc8ffc41d2c5",
+    "semantic_hash": "14a7208369d4ab7ad600cc8ffc41d2c5"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/.github/workflows/deploy-query.yml": {
+    "mtime": 1781585275.1895947,
+    "ast_hash": "d2aa8a6e923d535f51a6dcef3b4bae36",
+    "semantic_hash": "d2aa8a6e923d535f51a6dcef3b4bae36"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ARCHITECTURE.md": {
+    "mtime": 1782376708.2620144,
+    "ast_hash": "729e6094e65cd0b1bf80c84735272932",
+    "semantic_hash": "729e6094e65cd0b1bf80c84735272932"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/POSTGRES.md": {
+    "mtime": 1781579540.0,
+    "ast_hash": "6e719b46e041e9b89a4640b45fd0deb8",
+    "semantic_hash": "6e719b46e041e9b89a4640b45fd0deb8"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/README.md": {
+    "mtime": 1781580054.1909716,
+    "ast_hash": "a84331768b9604b7bba99b5d7cfa286a",
+    "semantic_hash": "a84331768b9604b7bba99b5d7cfa286a"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/TESTING.md": {
+    "mtime": 1781579454.0,
+    "ast_hash": "284aed137c5c3c354fd68bb9345e2240",
+    "semantic_hash": "284aed137c5c3c354fd68bb9345e2240"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/docker-compose.yml": {
+    "mtime": 1781566573.7387323,
+    "ast_hash": "dd1c189c4c03af1d2aad8c3867b68733",
+    "semantic_hash": "dd1c189c4c03af1d2aad8c3867b68733"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/ingestion-service/requirements.txt": {
+    "mtime": 1781567944.6298854,
+    "ast_hash": "5d27d7b0e79ee13e9f5c260cc4eaceb7",
+    "semantic_hash": "5d27d7b0e79ee13e9f5c260cc4eaceb7"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/product_hierarchy.eroad.yaml": {
+    "mtime": 1782379221.346729,
+    "ast_hash": "fe7ac51efa4dbcb731023fb9337a4f8c",
+    "semantic_hash": "fe7ac51efa4dbcb731023fb9337a4f8c"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/product_hierarchy.yaml": {
+    "mtime": 1781566581.1434324,
+    "ast_hash": "83f6ed2b46329bb5c0e9cc9803ba6094",
+    "semantic_hash": "83f6ed2b46329bb5c0e9cc9803ba6094"
+  },
+  "/Users/ranveeraiden/Library/CloudStorage/OneDrive-EROAD/Desktop/Workspace/iwiki/query-service/requirements.txt": {
+    "mtime": 1781567949.912967,
+    "ast_hash": "b079cf99a59c917e56a184026c3aeb77",
+    "semantic_hash": "b079cf99a59c917e56a184026c3aeb77"
+  }
+}
