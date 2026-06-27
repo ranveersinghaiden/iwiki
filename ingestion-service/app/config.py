@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     chunk_size: int = 512
     chunk_overlap: int = 64
     embedding_batch_size: int = 32
+    # Number of source documents processed concurrently per sync. Overlaps the
+    # embed / classify / DB-upsert work of independent pages so the pipeline is
+    # not bottlenecked on a single document's round-trips. Each in-flight page
+    # uses its own DB session, so keep this comfortably below the engine pool.
+    ingest_concurrency: int = 5
     # 5-part cron expression: minute hour day month day_of_week
     sync_cron: str = "0 * * * *"
     # Delete documents removed at the source during full syncs (safe: skipped when

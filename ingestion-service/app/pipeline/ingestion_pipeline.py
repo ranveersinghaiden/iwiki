@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
@@ -190,18 +191,24 @@ class IngestionPipeline:
     async def _sync_confluence(self, full_sync: bool) -> SyncResult:
         started = datetime.now(timezone.utc)
         processed = failed = 0
+        window: list[ConfluencePage] = []
 
         async with AsyncSessionFactory() as session:
             watermark = None if full_sync else await repository.get_watermark(session, "confluence")
             logger.info("[IngestionPipeline] confluence sync start full=%s watermark=%s", full_sync, watermark)
 
             async for page in self._confluence.fetch_pages(settings.confluence_space_list, updated_after=watermark):
-                try:
-                    await self._process_confluence_page(page, skip_unchanged=not full_sync)
-                    processed += 1
-                except Exception as exc:
-                    logger.error("[IngestionPipeline] confluence page %s failed: %s", page.page_id, exc, exc_info=exc)
-                    failed += 1
+                window.append(page)
+                if len(window) >= settings.ingest_concurrency:
+                    p, f = await self._process_confluence_window(window, full_sync)
+                    processed += p
+                    failed += f
+                    window = []
+
+            if window:
+                p, f = await self._process_confluence_window(window, full_sync)
+                processed += p
+                failed += f
 
             finished = datetime.now(timezone.utc)
             await repository.update_sync_state(
@@ -214,6 +221,31 @@ class IngestionPipeline:
 
         logger.info("[IngestionPipeline] confluence sync done processed=%d failed=%d", processed, failed)
         return SyncResult("confluence", processed, failed, started, finished)
+
+    async def _process_confluence_window(
+        self, pages: list[ConfluencePage], full_sync: bool
+    ) -> tuple[int, int]:
+        """Process a window of pages concurrently. Returns (processed, failed)."""
+        results = await asyncio.gather(
+            *(
+                self._process_confluence_page(page, skip_unchanged=not full_sync)
+                for page in pages
+            ),
+            return_exceptions=True,
+        )
+        processed = failed = 0
+        for page, result in zip(pages, results):
+            if isinstance(result, Exception):
+                logger.error(
+                    "[IngestionPipeline] confluence page %s failed: %s",
+                    page.page_id,
+                    result,
+                    exc_info=result,
+                )
+                failed += 1
+            else:
+                processed += 1
+        return processed, failed
 
     async def _process_confluence_page(self, page: ConfluencePage, skip_unchanged: bool = False) -> None:
         cleaned = clean_html(page.body_html)

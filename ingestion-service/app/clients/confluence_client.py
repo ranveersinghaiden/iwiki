@@ -52,17 +52,17 @@ class ConfluenceClient:
         space_key: str,
         updated_after: datetime | None,
     ) -> AsyncIterator[ConfluencePage]:
-        cursor: str | None = None
+        start = 0
+        page_size = settings.confluence_page_size
         async with httpx.AsyncClient(headers=self._headers, timeout=30) as client:
             while True:
                 params: dict[str, Any] = {
                     "spaceKey": space_key,
-                    "limit": settings.confluence_page_size,
+                    "limit": page_size,
+                    "start": start,
                     "expand": "body.storage,version,history.createdBy",
                     "status": "current",
                 }
-                if cursor:
-                    params["cursor"] = cursor
 
                 resp = await client.get(
                     f"{self._base}/wiki/rest/api/content",
@@ -80,14 +80,12 @@ class ConfluenceClient:
                         continue
                     yield page
 
-                # v1 API uses _links.next for pagination
-                next_link = data.get("_links", {}).get("next")
-                if not next_link:
+                # v1 /content paginates by offset; _links.next is present until the
+                # last page. Following the next URL drops the `expand` query param, so
+                # we advance the `start` offset ourselves and keep the same params.
+                if not data.get("_links", {}).get("next"):
                     break
-                # extract cursor from next link query string
-                cursor = _extract_cursor(next_link)
-                if not cursor:
-                    break
+                start += page_size
 
         logger.info("[ConfluenceClient] fetched pages for space=%s updated_after=%s", space_key, updated_after)
 
@@ -116,14 +114,4 @@ def _parse_dt(value: str | None) -> datetime | None:
         return datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
-
-
-def _extract_cursor(next_link: str) -> str | None:
-    """Extract 'cursor' query param from a relative URL string."""
-    if "cursor=" not in next_link:
-        return None
-    for part in next_link.split("&"):
-        if part.startswith("cursor=") or "?cursor=" in part:
-            return part.split("cursor=")[-1].split("&")[0]
-    return None
 
