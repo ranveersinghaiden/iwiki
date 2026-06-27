@@ -5,8 +5,9 @@ itself** (tables, columns, indexes) is documented once in
 [ARCHITECTURE.md § Data Model](ARCHITECTURE.md#data-model) — this file does not
 duplicate it.
 
-**At a glance:** PostgreSQL 16, image `pgvector/pgvector:pg16`, single required
-extension **`vector`** (`pg_trgm` is **not** used). Vector index is **HNSW**;
+**At a glance:** PostgreSQL 16, image `pgvector/pgvector:pg16` (pgvector 0.8), single
+required extension **`vector`** (`pg_trgm` is **not** used). Embeddings are stored as
+**`halfvec(768)`** (16-bit) indexed with **HNSW** (`m=24`, `ef_construction=128`);
 full-text uses a **generated `tsvector` column** with a GIN index. DDL:
 [`db/init.sql`](db/init.sql).
 
@@ -124,7 +125,7 @@ ORDER BY score DESC LIMIT 10;
 
 ## Switching embedding dimension
 
-The shipped schema is **`vector(768)`** (Ollama `nomic-embed-text`). To move to a
+The shipped schema is **`halfvec(768)`** (Ollama `nomic-embed-text`). To move to a
 different width — e.g. OpenAI `text-embedding-3-small` (**1536**) — the model
 output, `EMBEDDING_DIM`, and the column must all agree (see
 [ARCHITECTURE.md § embedding-dimension contract](ARCHITECTURE.md#embedding-dimension-is-a-configuration-contract)).
@@ -132,16 +133,16 @@ Existing 768-dim vectors cannot be reinterpreted, so re-ingest after migrating.
 
 ```sql
 -- 1. Resize the column (drops incompatible existing vectors' usability — plan a full re-sync)
-ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(1536);
+ALTER TABLE chunks ALTER COLUMN embedding TYPE halfvec(1536);
 
 -- 2. Rebuild the HNSW index for the new width
 DROP INDEX IF EXISTS idx_chunks_embedding;
 CREATE INDEX idx_chunks_embedding ON chunks
-  USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64);
+  USING hnsw (embedding halfvec_cosine_ops) WITH (m = 24, ef_construction = 128);
 ```
 Then set `EMBEDDING_MODEL`/`EMBEDDING_DIM` in `.env`, restart both services, and
 run a **full sync** (`POST /api/v1/ingest/sync/full`) to regenerate embeddings.
-For a clean slate instead, edit `vector(768)` in `db/init.sql` and recreate the
+For a clean slate instead, edit `halfvec(768)` in `db/init.sql` and recreate the
 volume (`docker compose down -v && docker compose up -d`).
 
 ---
@@ -185,10 +186,11 @@ Notes:
 
 ## HNSW Index Tuning
 
-The vector index is HNSW (`m=16`, `ef_construction=64`) — it works from a single
-row, unlike IVFFlat. Recall vs. latency is controlled at query time by
-`hnsw.ef_search`; the query service sets it per request to
-`max(40, SEARCH_CANDIDATE_LIMIT·2)`. To experiment manually:
+The vector index is HNSW over `halfvec` (`m=24`, `ef_construction=128`,
+`halfvec_cosine_ops`) — it works from a single row, unlike IVFFlat. Recall vs.
+latency is controlled at query time by `hnsw.ef_search`; the query service sets it
+per request to `max(40, SEARCH_CANDIDATE_LIMIT·2)` (= 200 at the default candidate
+limit of 100). To experiment manually:
 
 ```sql
 SET hnsw.ef_search = 80;   -- higher = better recall, slower

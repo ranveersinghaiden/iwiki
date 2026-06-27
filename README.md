@@ -47,10 +47,10 @@ cp .env.example .env
 ```
 
 **Choose your AI provider** (see [`.env.example`](.env.example) for both blocks):
-- **Ollama (local, default)** — matches the shipped `vector(768)` schema. Pull
+- **Ollama (local, default)** — matches the shipped `halfvec(768)` schema. Pull
   the models first: `ollama pull nomic-embed-text && ollama pull llama3.2:3b`.
 - **OpenAI** — set `EMBEDDING_MODEL=text-embedding-3-small`, `EMBEDDING_DIM=1536`,
-  and migrate the embedding column to `vector(1536)` (see
+  and migrate the embedding column to `halfvec(1536)` (see
   [POSTGRES.md](POSTGRES.md#switching-embedding-dimension)). The embedding
   dimension **must** match the DB column — see
   [ARCHITECTURE.md § embedding-dimension contract](ARCHITECTURE.md#embedding-dimension-is-a-configuration-contract).
@@ -66,8 +66,9 @@ curl -X POST http://localhost:8090/api/v1/ingest/sync/full \
   -H "X-Admin-Key: your_strong_admin_key_here"
 # → 202 {"status":"accepted","sync_type":"full","triggered_at":"…"}
 ```
-Watch progress: `docker compose logs -f ingestion-service`. Product experts are
-synthesised automatically when the sync completes.
+Watch progress: `docker compose logs -f ingestion-service`. Product-expert
+synthesis runs automatically when the sync completes (best-effort — see
+[ARCHITECTURE.md § Troubleshooting](ARCHITECTURE.md#troubleshooting)).
 
 ### 4. Ask a question
 ```bash
@@ -125,7 +126,7 @@ is off, so names may be set in any case; UPPER_SNAKE shown by convention.
 | `CONFLUENCE_BASE_URL` | ✅* | — | Usually same host as Jira |
 | `CONFLUENCE_API_TOKEN` | ✅* | — | Confluence API token |
 | `CONFLUENCE_SPACES` | ✅* | — | Comma-separated space keys; blank skips Confluence |
-| `CONFLUENCE_PAGE_SIZE` | optional | `50` | Results per Confluence page request |
+| `CONFLUENCE_PAGE_SIZE` | optional | `50` | Results per Confluence page request (raise to ~100 for faster bulk ingest) |
 
 \* Required only for the source you intend to index.
 
@@ -135,10 +136,10 @@ is off, so names may be set in any case; UPPER_SNAKE shown by convention.
 | `OPENAI_API_KEY` | ✅ | — | OpenAI key, or any non-empty dummy for Ollama |
 | `OLLAMA_BASE_URL` | optional | unset | Set → route to local Ollama (`http://localhost:11434/v1`; Docker: `http://host.docker.internal:11434/v1`). Unset → OpenAI |
 | `EMBEDDING_MODEL` | optional | `text-embedding-3-small` | `nomic-embed-text` (768) for Ollama; `text-embedding-3-small` (1536) for OpenAI |
-| `EMBEDDING_DIM` | optional | `1536` | **Advisory.** Must equal the model output **and** `chunks.embedding vector(N)` (shipped: 768). Changing it alone does nothing — also `ALTER` the column |
+| `EMBEDDING_DIM` | optional | `1536` | **Advisory.** Must equal the model output **and** `chunks.embedding halfvec(N)` (shipped: 768). Changing it alone does nothing — also `ALTER` the column |
 | `LLM_MODEL` | optional | `gpt-4o-mini` | Chat model for classify/answer/rerank (`llama3.2:3b` for Ollama) |
 
-> The shipped schema is `vector(768)` (Ollama `nomic-embed-text`). For OpenAI
+> The shipped schema is `halfvec(768)` (Ollama `nomic-embed-text`). For OpenAI
 > 1536-dim embeddings, migrate the column — see [POSTGRES.md](POSTGRES.md#switching-embedding-dimension).
 
 ### Ingestion tuning
@@ -147,7 +148,9 @@ is off, so names may be set in any case; UPPER_SNAKE shown by convention.
 | `CHUNK_SIZE` | `512` | Tokens per chunk |
 | `CHUNK_OVERLAP` | `64` | Token overlap between chunks |
 | `EMBEDDING_BATCH_SIZE` | `32` | Texts per embedding API call |
+| `INGEST_CONCURRENCY` | `5` | Source docs processed concurrently per sync (Confluence pages are windowed; Jira stays serial) |
 | `SYNC_CRON` | `0 * * * *` | 5-part cron for automatic incremental sync (default hourly) |
+| `RECONCILE_ON_FULL_SYNC` | `true` | On full sync, delete docs removed at the source; skipped if a source returns an empty id set |
 
 ### Classification (taxonomy + cascade)
 | Variable | Default | Description |
@@ -161,11 +164,11 @@ is off, so names may be set in any case; UPPER_SNAKE shown by convention.
 ### Retrieval & reranking (query-service)
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SEARCH_CANDIDATE_LIMIT` | `20` | Candidates pulled from each of the vector + FTS legs |
+| `SEARCH_CANDIDATE_LIMIT` | `100` | Candidates pulled from each of the vector + FTS legs; also sets `hnsw.ef_search = max(40, 2×limit)` |
 | `TOP_K_RESULTS` | `8` | Default chunks passed to the LLM (request `top_k` overrides, 1–20) |
 | `MAX_QUERY_LENGTH` | `4096` | Max characters in a user query |
 | `RERANK_ENABLED` | `true` | Master switch for the signal-blend rerank |
-| `RERANK_CANDIDATE_POOL` | `20` | Pool size pulled before reranking |
+| `RERANK_CANDIDATE_POOL` | `50` | Pool size pulled before reranking |
 | `RERANK_WEIGHT_RRF` | `0.55` | Weight: normalised RRF fusion score |
 | `RERANK_WEIGHT_FRESHNESS` | `0.15` | Weight: recency decay |
 | `RERANK_WEIGHT_AUTHORITY` | `0.15` | Weight: source authority |
@@ -176,6 +179,16 @@ is off, so names may be set in any case; UPPER_SNAKE shown by convention.
 | `RERANK_AUTHORITY_DEFAULT` | `0.6` | Authority weight for other sources |
 | `RERANK_LLM_ENABLED` | `true` | Optional LLM rerank of the top-N (degrades gracefully) |
 | `RERANK_LLM_TOP_N` | `10` | How many blended candidates the LLM reranks |
+
+### Redis cache (query-service)
+Caches query embeddings and full answers. **Fail-open**: if Redis is unreachable or `REDIS_URL` is blank, the query path still works (cache treated as a miss).
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `REDIS_URL` | compose: `redis://redis:6379/0` | Cache DSN. **Blank disables caching** (code default is blank; docker-compose and `.env.example` set it) |
+| `CACHE_ENABLED` | `true` | Master switch for the cache |
+| `CACHE_EMBEDDING_TTL` | `86400` | Query-embedding TTL (seconds; deterministic → long) |
+| `CACHE_ANSWER_TTL` | `3600` | Answer TTL (seconds). Answer keys include the permission scope, so cached answers never cross access boundaries |
+| `REDIS_PORT` | `6379` | Published Redis port (docker-compose) |
 
 ---
 
@@ -188,6 +201,7 @@ Both services serve under `/api/v1`. Interactive docs: `/docs` on each port.
 |--------|------|------|-------------|
 | `POST` | `/api/v1/ingest/sync/full` | admin | Full re-index of all configured sources → `202` |
 | `POST` | `/api/v1/ingest/sync/incremental` | admin | Sync only items updated since the watermark → `202` |
+| `POST` | `/api/v1/ingest/reconcile` | admin | Delete indexed docs no longer present at the source (empty-id-set safe-guard) → `202` |
 | `POST` | `/api/v1/ingest/document` | admin | Index one inline document through the full pipeline → `201` |
 | `POST` | `/api/v1/experts/refresh` | admin | Re-synthesise all product experts → `202` |
 | `GET` | `/api/v1/ingest/status` | admin | Per-source sync state (`sync_states`) |
@@ -260,6 +274,9 @@ uvicorn main:app --port 8091 --reload
 > `tiktoken` is optional (needs Rust); without it the chunker falls back to a
 > word-based approximation. Everything else is pure-Python.
 
+> Redis is optional for local query-service runs — the cache fails open. To enable
+> it: `docker compose up -d redis` and set `REDIS_URL=redis://localhost:6379/0`.
+
 For manual test procedures (sync, query, classification, experts, error cases),
 see [TESTING.md](TESTING.md).
 
@@ -267,6 +284,10 @@ see [TESTING.md](TESTING.md).
 
 ## Verified end-to-end
 
-Validated against the EROAD Confluence space **`EN`**: 50 pages → 47 documents,
-103 chunks (768-dim), 11 products classified (21 rule + 26 semantic), 11 product
-experts synthesised, and a sample query returned a grounded, cited answer.
+Validated against the full EROAD Confluence space **`EN`**: 7,570 pages processed
+(0 failed) → **6,593 documents / 15,663 chunks** (768-dim `halfvec`); classified
+625 rule + 5,968 semantic across 3 products (Tracking, Platform, Payments). Hybrid
+retrieval (pgvector HNSW + FTS, no LLM) runs p50 ≈ 6 ms / p95 ≈ 34 ms over 15.6k
+chunks — see [TESTING.md § Benchmarks](TESTING.md#benchmarks). Product-expert
+synthesis currently yields 0 records on `llama3.2:3b` — see
+[ARCHITECTURE.md § Troubleshooting](ARCHITECTURE.md#troubleshooting).
