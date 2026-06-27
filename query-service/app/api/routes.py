@@ -21,6 +21,7 @@ from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.config import settings
+from app import cache
 from app.db.database import AsyncSessionFactory
 from app.db import expert_repository
 from app.rag.answer_generator import Answer, Source, generate_answer
@@ -90,8 +91,23 @@ async def query_knowledge_base(
     allowed_spaces = _parse_header_list(x_allowed_spaces)
     allowed_projects = _parse_header_list(x_allowed_projects)
 
+    # Answer cache — key includes the permission scope so a cached answer is only
+    # ever served back to a request with the identical access rights.
+    ans_key = cache.answer_key(
+        request.query, request.top_k, allowed_spaces, allowed_projects, x_product_filter
+    )
+    cached = await cache.get_json(ans_key)
+    if cached is not None:
+        logger.info("[routes] answer cache hit query=%r", request.query[:80])
+        return QueryResponse(**cached)
+
     embedder = QueryEmbedder()
-    query_vec = await embedder.embed(request.query)
+    # Embedding cache — deterministic per (model, query); skips an API round-trip.
+    emb_key = cache.embedding_key(settings.embedding_model, request.query)
+    query_vec = await cache.get_json(emb_key)
+    if query_vec is None:
+        query_vec = await embedder.embed(request.query)
+        await cache.set_json(emb_key, query_vec, settings.cache_embedding_ttl)
 
     # Pull a wider candidate pool than requested so the reranker has room to work,
     # then rerank down to the caller's top_k.
@@ -118,13 +134,15 @@ async def query_knowledge_base(
         len(answer.sources),
     )
 
-    return QueryResponse(
+    response = QueryResponse(
         answer=answer.answer_text,
         sources=[_source_to_response(s) for s in answer.sources],
         query=answer.query,
         chunks_retrieved=answer.chunks_used,
         model_used=answer.model_used,
     )
+    await cache.set_json(ans_key, response.model_dump(), settings.cache_answer_ttl)
+    return response
 
 
 # ── Product expert endpoints ──────────────────────────────────────────────────

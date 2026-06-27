@@ -27,6 +27,7 @@ class Document(Base):
     allowed_spaces: Mapped[list] = mapped_column(ARRAY(String), default=list)
     allowed_projects: Mapped[list] = mapped_column(ARRAY(String), default=list)
     product_hierarchy: Mapped[dict] = mapped_column(JSONB, default=dict)
+    content_hash: Mapped[Optional[str]] = mapped_column(Text)
     indexed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

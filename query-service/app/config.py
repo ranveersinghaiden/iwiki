@@ -23,8 +23,10 @@ class Settings(BaseSettings):
     ollama_base_url: Optional[str] = None
 
     # Hybrid search tuning
-    # Number of candidates fetched from each of vector + FTS legs before RRF
-    search_candidate_limit: int = 20
+    # Number of candidates fetched from each of vector + FTS legs before RRF.
+    # Raised to 100 for the large-corpus band: a wider pool materially lifts recall
+    # before reranking, and halfvec keeps the extra scan cheap.
+    search_candidate_limit: int = 100
     # Final top-K chunks passed to the LLM as RAG context
     top_k_results: int = 8
     # Maximum characters in a user query
@@ -34,7 +36,7 @@ class Settings(BaseSettings):
     # Master switch for the signal-blend reranking stage.
     rerank_enabled: bool = True
     # Size of the candidate pool pulled from hybrid search before reranking.
-    rerank_candidate_pool: int = 20
+    rerank_candidate_pool: int = 50
     # Blend weights (relative; normalised internally). RRF dominates by default.
     rerank_weight_rrf: float = 0.55
     rerank_weight_freshness: float = 0.15
@@ -49,6 +51,17 @@ class Settings(BaseSettings):
     # Optional LLM rerank stage applied to the top-N blended candidates.
     rerank_llm_enabled: bool = True
     rerank_llm_top_n: int = 10
+
+    # ── Redis cache ───────────────────────────────────────────────────────────
+    # Caches query embeddings and full answers. Fail-open: if Redis is down or
+    # cache_enabled is False the query path proceeds normally (cache treated as a
+    # permanent miss). Empty redis_url disables the cache entirely.
+    redis_url: str = ""
+    cache_enabled: bool = True
+    # Embeddings are deterministic per (model, text) → long TTL is safe.
+    cache_embedding_ttl: int = 86400
+    # Answers can change as the corpus is re-indexed → keep this short.
+    cache_answer_ttl: int = 3600
 
     @property
     def ai_base_url(self) -> Optional[str]:

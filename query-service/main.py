@@ -5,7 +5,9 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from app.api.routes import router
+from app.cache import aclose_redis
 from app.db.database import engine
+from app.llm import aclose_client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,6 +17,8 @@ logger = logging.getLogger(__name__)
 async def lifespan(_: FastAPI):
     logger.info("[main] query-service starting")
     yield
+    await aclose_client()
+    await aclose_redis()
     await engine.dispose()
     logger.info("[main] query-service stopped")
 

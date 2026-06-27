@@ -1,6 +1,7 @@
 """Ingestion service API routes — all endpoints require X-Admin-Key header."""
 from __future__ import annotations
 
+import hashlib
 import logging
 from datetime import datetime, timezone
 
@@ -65,6 +66,18 @@ async def trigger_incremental_sync(background_tasks: BackgroundTasks) -> dict:
     return {"status": "accepted", "sync_type": "incremental", "triggered_at": datetime.now(timezone.utc).isoformat()}
 
 
+@router.post("/ingest/reconcile", status_code=202, dependencies=[Depends(_require_admin)])
+async def trigger_reconcile(background_tasks: BackgroundTasks) -> dict:
+    """Delete indexed documents that no longer exist at the source.
+
+    Safe by design: each source is skipped if its remote id-set comes back empty
+    (e.g. an API outage), so a transient failure can never wipe the index.
+    """
+    background_tasks.add_task(_run_reconcile)
+    logger.info("[routes] reconcile triggered")
+    return {"status": "accepted", "triggered_at": datetime.now(timezone.utc).isoformat()}
+
+
 # ── Status endpoint ───────────────────────────────────────────────────────────
 
 @router.get("/ingest/status", dependencies=[Depends(_require_admin)])
@@ -118,6 +131,15 @@ async def _run_expert_refresh() -> None:
         logger.error("[routes] expert refresh failed: %s", exc, exc_info=exc)
 
 
+async def _run_reconcile() -> None:
+    try:
+        pipeline = IngestionPipeline.build()
+        deleted = await pipeline.reconcile_deletions()
+        logger.info("[routes] reconcile done deleted=%s", deleted)
+    except Exception as exc:
+        logger.error("[routes] reconcile failed: %s", exc, exc_info=exc)
+
+
 # ── Direct document ingestion (testing + manual indexing) ─────────────────────
 
 @router.post("/ingest/document", status_code=201, dependencies=[Depends(_require_admin)])
@@ -136,6 +158,7 @@ async def ingest_single_document(req: IngestDocumentRequest) -> dict:
     if not chunks:
         raise HTTPException(status_code=422, detail="Document produced no chunks after cleaning")
 
+    content_hash = hashlib.sha256(cleaned.encode("utf-8")).hexdigest()
     texts = [c.content for c in chunks]
     embeddings = await embedder.embed_batch(texts)
     classification = await classifier.classify(req.title, cleaned[:600])
@@ -166,6 +189,7 @@ async def ingest_single_document(req: IngestDocumentRequest) -> dict:
             product_hierarchy=classification,
             source_updated_at=datetime.now(timezone.utc),
             chunks=chunk_records,
+            content_hash=content_hash,
         )
 
     logger.info(

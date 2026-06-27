@@ -1,7 +1,7 @@
 """
 Repository — all DB writes for the ingestion pipeline.
 Chunks are stored via raw SQL to avoid needing the pgvector SQLAlchemy extension;
-embeddings are passed as text strings that PostgreSQL casts to vector automatically.
+embeddings are passed as text strings that PostgreSQL casts to halfvec automatically.
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ _CHUNK_UPSERT = text("""
         :document_id,
         :chunk_index,
         :content,
-        CAST(:embedding AS vector),
+        CAST(:embedding AS halfvec),
         :token_count,
         CAST(:metadata AS jsonb)
     )
@@ -105,6 +105,15 @@ _GET_DISTINCT_PRODUCTS = text("""
       AND product_hierarchy->>'product' != 'General'
 """)
 
+_GET_CONTENT_HASH = text("""
+    SELECT content_hash FROM documents
+    WHERE source_type = :source_type AND source_id = :source_id
+""")
+
+_LIST_SOURCE_IDS = text("""
+    SELECT source_id FROM documents WHERE source_type = :source_type
+""")
+
 
 @dataclass
 class ChunkRecord:
@@ -130,6 +139,7 @@ async def upsert_document_with_chunks(
     product_hierarchy: dict[str, Any],
     source_updated_at: datetime | None,
     chunks: list[ChunkRecord],
+    content_hash: str | None = None,
 ) -> uuid.UUID:
     """Upsert a document and replace all its chunks atomically."""
     stmt = (
@@ -146,6 +156,7 @@ async def upsert_document_with_chunks(
             allowed_projects=allowed_projects,
             product_hierarchy=product_hierarchy,
             source_updated_at=source_updated_at,
+            content_hash=content_hash,
         )
         .on_conflict_do_update(
             constraint="uq_documents_source",
@@ -159,6 +170,7 @@ async def upsert_document_with_chunks(
                 "allowed_projects": allowed_projects,
                 "product_hierarchy": product_hierarchy,
                 "source_updated_at": source_updated_at,
+                "content_hash": content_hash,
                 "indexed_at": datetime.now(timezone.utc),
             },
         )
@@ -187,6 +199,40 @@ async def upsert_document_with_chunks(
     await session.commit()
     logger.debug("[Repository] upserted doc %s with %d chunks", doc_id, len(chunks))
     return doc_id
+
+
+async def get_document_content_hash(
+    session: AsyncSession, source_type: str, source_id: str
+) -> str | None:
+    """Return the stored content_hash for a document, or None if absent/unknown."""
+    result = await session.execute(
+        _GET_CONTENT_HASH, {"source_type": source_type, "source_id": source_id}
+    )
+    row = result.fetchone()
+    return row[0] if row else None
+
+
+async def list_source_ids(session: AsyncSession, source_type: str) -> set[str]:
+    """Return the set of all source_ids currently indexed for a source type."""
+    result = await session.execute(_LIST_SOURCE_IDS, {"source_type": source_type})
+    return {row[0] for row in result.fetchall()}
+
+
+async def delete_documents_by_source_ids(
+    session: AsyncSession, source_type: str, source_ids: list[str]
+) -> int:
+    """Delete documents (chunks cascade) for the given source_ids. Returns count."""
+    if not source_ids:
+        return 0
+    result = await session.execute(
+        text(
+            "DELETE FROM documents "
+            "WHERE source_type = :source_type AND source_id = ANY(:source_ids)"
+        ),
+        {"source_type": source_type, "source_ids": list(source_ids)},
+    )
+    await session.commit()
+    return result.rowcount or 0
 
 
 async def get_watermark(session: AsyncSession, source_type: str) -> datetime | None:

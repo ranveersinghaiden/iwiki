@@ -350,11 +350,11 @@ WHERE jsonb_typeof(upstream_dependencies)!='array';")" "0"
     "$(psql_q "SELECT COUNT(*) FROM product_experts \
 WHERE jsonb_typeof(downstream_affected)!='array';")" "0"
   assert "source_document_count ≥ 1" \
-    "$(psql_q 'SELECT COUNT(*) FROM product_experts \
-WHERE source_document_count < 1;')" "0"
+    "$(psql_q "SELECT COUNT(*) FROM product_experts \
+WHERE source_document_count < 1;")" "0"
   assert "generated_at is set" \
-    "$(psql_q 'SELECT COUNT(*) FROM product_experts \
-WHERE generated_at IS NULL;')" "0"
+    "$(psql_q "SELECT COUNT(*) FROM product_experts \
+WHERE generated_at IS NULL;")" "0"
   echo ""; echo "  Experts generated:"
   psql_q "SELECT product, COALESCE(component,'(product-level)'), \
 source_document_count FROM product_experts ORDER BY product;" \

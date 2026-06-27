@@ -3,7 +3,9 @@ Stub OpenAI-compatible server for E2E testing.
 Implements /v1/embeddings and /v1/chat/completions with no real AI.
 
 Embeddings:
-  Deterministic 1536-dim unit vector derived from MD5 of input text.
+  Deterministic 768-dim unit vector derived from MD5 of input text.
+  768 matches the shipped chunks.embedding vector/halfvec(768) schema
+  (Ollama nomic-embed-text default). For OpenAI (1536) bump this + the column.
   Same text -> same vector (idempotent). FTS search drives relevance in tests.
 
 Chat completions -- two modes detected from prompt content:
@@ -29,7 +31,7 @@ from fastapi.responses import JSONResponse
 app = FastAPI(title="iWiki Stub OpenAI")
 
 
-def _deterministic_embedding(text: str, dim: int = 1536) -> list[float]:
+def _deterministic_embedding(text: str, dim: int = 768) -> list[float]:
     """Generate a deterministic unit vector from text using MD5 seed."""
     seed = int(hashlib.md5(text.encode("utf-8", errors="replace")).hexdigest(), 16) % (2**32)
     rng = random.Random(seed)

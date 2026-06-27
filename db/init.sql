@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS documents (
     -- keys: product, feature, component, confidence (0-1), method
     --       (rule|semantic|llm|fallback), needs_review (bool)
     product_hierarchy   JSONB       NOT NULL DEFAULT '{}',
+    -- SHA-256 of cleaned_content — lets incremental sync skip re-embedding
+    -- documents whose content has not changed (large cost saving at scale).
+    content_hash        TEXT,
     indexed_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     source_updated_at   TIMESTAMPTZ,
     CONSTRAINT uq_documents_source UNIQUE (source_type, source_id)
@@ -33,15 +36,18 @@ CREATE INDEX IF NOT EXISTS idx_documents_updated_at    ON documents (source_upda
 
 -- ─── chunks ───────────────────────────────────────────────────────────────────
 -- Semantic chunks derived from documents. Holds the vector embedding + FTS index.
--- NOTE: embedding dimension must match EMBEDDING_DIM env var (default 1536).
---       If switching to a 768-dim model (e.g. nomic-embed-text), run:
---       ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(768);
+-- NOTE: embedding dimension must match EMBEDDING_DIM env var (default 768 here).
+--       If switching to a 1536-dim model, run:
+--       ALTER TABLE chunks ALTER COLUMN embedding TYPE halfvec(1536);
+-- Storage: halfvec (16-bit) halves index + RAM vs vector (32-bit) with negligible
+--          recall loss — the key lever for the 1–10M-chunk scale band.
+--          Requires pgvector >= 0.7 (pgvector/pgvector:pg16 ships 0.8).
 CREATE TABLE IF NOT EXISTS chunks (
     id              UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
     document_id     UUID    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
     chunk_index     INT     NOT NULL,
     content         TEXT    NOT NULL,
-    embedding       vector(768),
+    embedding       halfvec(768),
     -- generated FTS column — no manual maintenance needed
     fts_vector      TSVECTOR GENERATED ALWAYS AS
                         (to_tsvector('english', coalesce(content, ''))) STORED,
@@ -52,10 +58,12 @@ CREATE TABLE IF NOT EXISTS chunks (
 
 -- HNSW index — no minimum-row requirement, works from 1 row up.
 -- Faster build than IVFFlat for small-to-medium datasets.
--- m=16, ef_construction=64 are sensible defaults; tune ef_search at query time.
+-- m=24, ef_construction=128 raise recall for the larger (1–10M-chunk) band at the
+-- cost of a slower build; tune ef_search at query time (set in hybrid_search.py).
+-- halfvec_cosine_ops keeps the index in 16-bit to halve its memory footprint.
 CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON chunks
-    USING hnsw (embedding vector_cosine_ops)
-    WITH (m = 16, ef_construction = 64);
+    USING hnsw (embedding halfvec_cosine_ops)
+    WITH (m = 24, ef_construction = 128);
 
 CREATE INDEX IF NOT EXISTS idx_chunks_fts       ON chunks USING GIN (fts_vector);
 CREATE INDEX IF NOT EXISTS idx_chunks_doc_id    ON chunks (document_id);

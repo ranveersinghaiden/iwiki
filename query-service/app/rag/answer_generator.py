@@ -9,9 +9,8 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from openai import AsyncOpenAI
-
 from app.config import settings
+from app.llm import get_client
 from app.search.hybrid_search import SearchResult
 
 logger = logging.getLogger(__name__)
@@ -89,10 +88,7 @@ async def generate_answer(
         f"Question: {query}"
     )
 
-    client = AsyncOpenAI(
-        api_key=settings.openai_api_key,
-        base_url=settings.ai_base_url,
-    )
+    client = get_client()
 
     response = await client.chat.completions.create(
         model=settings.llm_model,

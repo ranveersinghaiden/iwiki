@@ -6,4 +6,5 @@ openai==1.57.0
 # tiktoken==0.8.0  # optional — requires Rust
 pydantic-settings==2.6.1
 python-multipart==0.0.19
+redis==5.2.1
 

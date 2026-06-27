@@ -24,9 +24,10 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from openai import APIError, AsyncOpenAI
+from openai import APIError
 
 from app.config import settings
+from app.llm import get_client
 from app.search.hybrid_search import SearchResult
 
 logger = logging.getLogger(__name__)
@@ -136,14 +137,14 @@ async def _llm_rerank(query: str, candidates: list[SearchResult]) -> list[Search
     )
 
     try:
-        async with AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.ai_base_url) as client:
-            response = await client.chat.completions.create(
-                model=settings.llm_model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0,
-                max_tokens=128,
-            )
-            raw = (response.choices[0].message.content or "").strip()
+        client = get_client()
+        response = await client.chat.completions.create(
+            model=settings.llm_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            max_tokens=128,
+        )
+        raw = (response.choices[0].message.content or "").strip()
         order = _parse_order(raw, n)
     except (APIError, json.JSONDecodeError, ValueError, TypeError) as exc:
         logger.warning("[reranker] LLM rerank failed (%s) — keeping signal order", exc)

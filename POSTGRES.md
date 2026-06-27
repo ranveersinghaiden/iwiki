@@ -146,6 +146,43 @@ volume (`docker compose down -v && docker compose up -d`).
 
 ---
 
+## Migrating an existing DB to halfvec + content_hash
+
+The current schema stores embeddings as **`halfvec(768)`** (16-bit) instead of
+`vector(768)` (32-bit). This halves index size and RAM with negligible recall loss
+— the key lever for the 1–10M-chunk scale band. Fresh databases get this from
+`db/init.sql` automatically. To migrate an **existing** database in place:
+
+```sql
+-- 0. Requires pgvector >= 0.7 (the pgvector/pgvector:pg16 image ships 0.8). Check:
+SELECT extversion FROM pg_extension WHERE extname = 'vector';
+
+-- 1. Add the content-hash column used to skip re-embedding unchanged documents.
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS content_hash TEXT;
+
+-- 2. Drop the HNSW index FIRST — a vector_cosine_ops index blocks the type change.
+DROP INDEX IF EXISTS idx_chunks_embedding;
+
+-- 3. Convert the embedding column to halfvec (existing values are cast in place).
+ALTER TABLE chunks ALTER COLUMN embedding TYPE halfvec(768);
+
+-- 4. Rebuild the HNSW index with the halfvec operator class and retuned params.
+CREATE INDEX idx_chunks_embedding ON chunks
+    USING hnsw (embedding halfvec_cosine_ops) WITH (m = 24, ef_construction = 128);
+```
+
+Notes:
+- The index **must** be dropped before the `ALTER COLUMN` — Postgres rejects the type
+  change while a `vector_cosine_ops` index still references the column.
+- `content_hash` backfills as `NULL`; the next sync repopulates it. Until then those
+  documents are simply re-embedded once (no skip), which is harmless.
+- Index rebuild can be slow on large tables — run it during a maintenance window, or
+  use `CREATE INDEX CONCURRENTLY` (outside a transaction) to avoid blocking writes.
+- To roll back: drop the index, `ALTER TABLE chunks ALTER COLUMN embedding TYPE
+  vector(768);`, then recreate the index with `vector_cosine_ops`.
+
+---
+
 ## HNSW Index Tuning
 
 The vector index is HNSW (`m=16`, `ef_construction=64`) — it works from a single

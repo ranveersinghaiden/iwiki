@@ -48,13 +48,13 @@ WITH vector_search AS (
         c.content,
         c.document_id,
         ROW_NUMBER() OVER (
-            ORDER BY c.embedding <=> '{vec_literal}'::vector
+            ORDER BY c.embedding <=> '{vec_literal}'::halfvec
         )                                               AS vector_rank
     FROM chunks c
     JOIN documents d ON c.document_id = d.id
     WHERE 1=1
     {where_clause}
-    ORDER BY c.embedding <=> '{vec_literal}'::vector
+    ORDER BY c.embedding <=> '{vec_literal}'::halfvec
     LIMIT :candidate_limit
 ),
 fts_search AS (

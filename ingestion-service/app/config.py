@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     embedding_batch_size: int = 32
     # 5-part cron expression: minute hour day month day_of_week
     sync_cron: str = "0 * * * *"
+    # Delete documents removed at the source during full syncs (safe: skipped when
+    # the remote returns an empty id set, e.g. on API failure).
+    reconcile_on_full_sync: bool = True
 
     # ── Hierarchy ─────────────────────────────────────────────────────────────
     hierarchy_config_path: str = "product_hierarchy.yaml"
