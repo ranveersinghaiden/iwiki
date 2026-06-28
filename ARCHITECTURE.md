@@ -49,6 +49,7 @@ link here for design/schema and do not duplicate it:
 | `ingestion-service` | 8090 | Fetch, clean, chunk, embed, classify, index; synthesise product experts; schedule incremental syncs |
 | `query-service` | 8091 | Natural-language query → hybrid retrieval + rerank + RAG answer; serve product experts |
 | `db` (pgvector/pgvector:pg16) | 5432 | Vector + full-text + metadata storage |
+| `redis` (redis:7-alpine, optional) | 6379 | Query-service cache for embeddings + answers; fail-open |
 
 **Stack:** Python 3.12 · FastAPI · async SQLAlchemy + asyncpg · PostgreSQL 16 +
 pgvector · OpenAI-compatible client (OpenAI **or** local Ollama) · APScheduler.
@@ -76,18 +77,18 @@ When running services in Docker against Ollama on the host, use
 ⚠️ The embedding width is **not** auto-detected. Three things must agree:
 
 ```
-embedding model output dim  ==  EMBEDDING_DIM  ==  chunks.embedding vector(N)
+embedding model output dim  ==  EMBEDDING_DIM  ==  chunks.embedding halfvec(N)
 ```
 
 - `EMBEDDING_DIM` is **advisory** — it documents intent and is **not** read to
   size the column or validate vectors. The binding constraints are the model's
-  actual output and the `vector(N)` column in [`db/init.sql`](db/init.sql).
-- The **shipped schema is `vector(768)`**, matching Ollama `nomic-embed-text`.
+  actual output and the `halfvec(N)` column in [`db/init.sql`](db/init.sql).
+- The **shipped schema is `halfvec(768)`**, matching Ollama `nomic-embed-text`.
   This is the out-of-the-box working configuration.
 - To use **OpenAI 1536-dim** embeddings you must set `EMBEDDING_DIM=1536` **and**
-  migrate the column: `ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(1536);`
+  migrate the column: `ALTER TABLE chunks ALTER COLUMN embedding TYPE halfvec(1536);`
   then rebuild the HNSW index. See [POSTGRES.md § Switching embedding dimension](POSTGRES.md#switching-embedding-dimension).
-- A mismatch (e.g. 1536-dim vectors into a `vector(768)` column) makes every
+- A mismatch (e.g. 1536-dim vectors into a `halfvec(768)` column) makes every
   chunk insert fail during ingestion.
 
 ---
@@ -115,6 +116,7 @@ PostgreSQL 16 with the **`vector`** extension (the only required extension —
 | `product_hierarchy` | `JSONB` | Classification result (see below) |
 | `indexed_at` | `TIMESTAMPTZ` | |
 | `source_updated_at` | `TIMESTAMPTZ` | Source's last-modified — drives freshness + incremental sync |
+| `content_hash` | `TEXT` | SHA-256 of cleaned content; lets **incremental** sync skip re-embed/reclassify when unchanged |
 
 Indexes: `source_type`; GIN on `allowed_spaces`, `allowed_projects`,
 `product_hierarchy`; btree on `source_updated_at`.
@@ -141,17 +143,21 @@ lives in this column):
 | `document_id` | `UUID` FK | → `documents(id)` `ON DELETE CASCADE` |
 | `chunk_index` | `INT` | **unique with `document_id`** |
 | `content` | `TEXT` | Chunk text |
-| `embedding` | `vector(768)` | Must match `EMBEDDING_DIM` + model output |
+| `embedding` | `halfvec(768)` | Must match `EMBEDDING_DIM` + model output |
 | `fts_vector` | `TSVECTOR` | **Generated** `to_tsvector('english', content)`, `STORED` — no manual maintenance |
 | `token_count` | `INT` | |
 | `metadata` | `JSONB` | `{source, issue_key/space_key, …}` |
 
 Indexes:
-- **HNSW** on `embedding` (`vector_cosine_ops`, `m=16`, `ef_construction=64`) —
+- **HNSW** on `embedding` (`halfvec_cosine_ops`, `m=24`, `ef_construction=128`) —
   works from a single row (no IVFFlat list/training requirement); `ef_search`
   is tuned per query.
 - **GIN** on `fts_vector` (full-text search).
 - btree on `document_id`.
+
+> Embeddings are stored as **`halfvec`** (16-bit floats) — half the bytes and a
+> smaller HNSW index than `vector`, with negligible recall loss at 768-dim. Requires
+> **pgvector ≥ 0.7** (the `pgvector/pgvector:pg16` image ships 0.8).
 
 ### `sync_state` — incremental-sync watermarks
 
@@ -205,11 +211,28 @@ After **all** sources finish, the pipeline always runs the
 | **Chunk** | `chunker.py` | Token-based sliding window (`CHUNK_SIZE`=512, `CHUNK_OVERLAP`=64) using `tiktoken` (`cl100k_base`) when installed; otherwise a word-based approximation (~1.3 tokens/word). |
 | **Embed** | `embedder.py` | Batches of `EMBEDDING_BATCH_SIZE` (32) via the configured provider; inputs truncated to 8000 chars. |
 | **Classify** | `classifier.py` | 3-stage cascade (below) → writes `product_hierarchy`. |
-| **Upsert** | `repository.py` | `documents` upserted on `(source_type, source_id)`; chunks **fully replaced** per document (delete + re-insert) so re-syncs are idempotent. Embeddings passed as text and cast to `vector`. |
+| **Upsert** | `repository.py` | `documents` upserted on `(source_type, source_id)`; chunks **fully replaced** per document (delete + re-insert) so re-syncs are idempotent. Embeddings passed as text and cast to `halfvec`. |
 
 A direct-ingest endpoint (`POST /api/v1/ingest/document`) runs the same pipeline
 on a single inline document — useful for testing and indexing content outside
 Jira/Confluence.
+
+### Incremental skip, pagination, concurrency & deletion
+
+- **Content-hash skip.** Each document stores a `content_hash` (SHA-256 of cleaned
+  content). On **incremental** sync an unchanged hash skips embed + classify + upsert
+  entirely; **full** sync always re-embeds and reclassifies (so taxonomy edits apply).
+- **Confluence pagination.** The Confluence v1 `/rest/api/content` endpoint paginates
+  by `start=` **offset** (its `_links.next` carries `start=N`, *not* a cursor). The
+  client increments `start` by the page size until no `_links.next` appears, so the
+  whole space is fetched — not just the first page (~50 pages).
+- **Concurrency.** Confluence pages are processed in concurrent windows of
+  `INGEST_CONCURRENCY` (5) via `asyncio.gather`, each page on its own DB session;
+  Jira stays serial. Throughput is bounded by serial Ollama embedding (~1.5 docs/s).
+- **Delete reconciliation.** After a **full** sync (and on demand via `POST
+  /api/v1/ingest/reconcile`) the pipeline deletes indexed docs whose `source_id` is no
+  longer returned by the source. **Safety guard:** if a source returns an empty id set
+  (e.g. an API failure), that source is skipped — nothing is deleted.
 
 ---
 
@@ -272,10 +295,11 @@ parse + validate query
 
 ### 1. Hybrid retrieval + RRF
 [`hybrid_search.py`](query-service/app/search/hybrid_search.py) runs two legs in
-one SQL statement, each limited to `SEARCH_CANDIDATE_LIMIT` (20):
+one SQL statement, each limited to `SEARCH_CANDIDATE_LIMIT` (100):
 
-- **Vector** — `embedding <=> :query::vector` cosine distance over the HNSW
-  index. `hnsw.ef_search` is set per query to `max(40, candidate_limit·2)`.
+- **Vector** — `embedding <=> :query::halfvec` cosine distance over the HNSW
+  index. `hnsw.ef_search` is set per query to `max(40, candidate_limit·2)` (= 200 at
+  the default candidate limit of 100).
 - **Full-text (BM25-style)** — `ts_rank_cd(fts_vector, plainto_tsquery('english', …))`.
 
 Results are fused with **Reciprocal Rank Fusion**:
@@ -348,6 +372,20 @@ section.
 `relevance_score` is the `rerank_score` when reranking ran, otherwise the raw
 RRF score.
 
+### Caching (Redis, optional)
+
+[`cache.py`](query-service/app/cache.py) wraps the query path with a Redis cache
+(`REDIS_URL`; blank disables it). Two entry types:
+
+- **Query embedding** — keyed by model + text; TTL `CACHE_EMBEDDING_TTL` (24 h).
+- **Answer** — keyed by query, `top_k`, **and the permission scope**
+  (`allowed_spaces` / `allowed_projects` / `product_filter`); TTL `CACHE_ANSWER_TTL`
+  (1 h). Including the scope in the key means cached answers **never cross access
+  boundaries**.
+
+The cache is **fail-open**: any Redis error (or a blank `REDIS_URL`) is treated as a
+miss, so the query path still works. The client is a singleton, closed on shutdown.
+
 ---
 
 ## Product Experts
@@ -372,6 +410,10 @@ query API already support component-level experts for future use.
 query service — used by humans and by AI agents to ground feature development and
 test generation in rich product context (compressed context + dependency graph).
 
+> **Note:** synthesis requires strict-JSON LLM output; `llama3.2:3b` often fails it,
+> leaving `product_experts` empty. Retrieval does **not** use this table — see
+> [§ Troubleshooting](#troubleshooting).
+
 ---
 
 ## Configuration
@@ -383,12 +425,14 @@ section explains the **behavioural knobs** and their effects:
 
 | Area | Variables | Effect |
 |------|-----------|--------|
-| AI provider | `OLLAMA_BASE_URL`, `OPENAI_API_KEY`, `EMBEDDING_MODEL`, `EMBEDDING_DIM`, `LLM_MODEL` | Selects backend + models. `EMBEDDING_DIM` must match the `vector(N)` column (see [§ contract](#embedding-dimension-is-a-configuration-contract)). |
+| AI provider | `OLLAMA_BASE_URL`, `OPENAI_API_KEY`, `EMBEDDING_MODEL`, `EMBEDDING_DIM`, `LLM_MODEL` | Selects backend + models. `EMBEDDING_DIM` must match the `halfvec(N)` column (see [§ contract](#embedding-dimension-is-a-configuration-contract)). |
 | Chunking | `CHUNK_SIZE`, `CHUNK_OVERLAP`, `EMBEDDING_BATCH_SIZE` | Chunk granularity and embedding throughput. |
 | Scheduling | `SYNC_CRON` | Cron for automatic incremental sync (5-part expression). |
 | Classifier | `CLASSIFICATION_RULE_MIN_SCORE`, `CLASSIFICATION_SEMANTIC_FALLBACK`, `CLASSIFICATION_SEMANTIC_THRESHOLD`, `CLASSIFICATION_REVIEW_THRESHOLD` | Cascade thresholds + review flagging. Lower thresholds = more matches, more false positives. |
 | Retrieval | `SEARCH_CANDIDATE_LIMIT`, `TOP_K_RESULTS`, `MAX_QUERY_LENGTH` | Candidate breadth, context size, input guard. |
 | Reranking | `RERANK_ENABLED`, `RERANK_CANDIDATE_POOL`, `RERANK_WEIGHT_*`, `RERANK_FRESHNESS_HALF_LIFE_DAYS`, `RERANK_AUTHORITY_*`, `RERANK_LLM_ENABLED`, `RERANK_LLM_TOP_N` | Signal-blend behaviour + optional LLM rerank. |
+| Sync & dedupe | `INGEST_CONCURRENCY`, `RECONCILE_ON_FULL_SYNC` | Confluence page concurrency; delete-reconciliation on full sync (empty-id-set safe-guard). Incremental sync also skips unchanged docs via `content_hash`. |
+| Caching | `REDIS_URL`, `CACHE_ENABLED`, `CACHE_EMBEDDING_TTL`, `CACHE_ANSWER_TTL` | Query-service Redis cache for embeddings + answers; blank `REDIS_URL` disables, fail-open. Answer keys include the permission scope. |
 | Auth | `ADMIN_API_KEY` | Gates all ingestion mutating endpoints. |
 
 ---
@@ -397,12 +441,17 @@ section explains the **behavioural knobs** and their effects:
 
 | Area | Characteristic |
 |------|----------------|
-| Vector index | HNSW (`m=16`, `ef_construction=64`); per-query `ef_search = max(40, candidate_limit·2)`. Tune up for recall, down for latency. |
+| Vector index | HNSW (`m=24`, `ef_construction=128`); per-query `ef_search = max(40, candidate_limit·2)`. Tune up for recall, down for latency. |
 | Hybrid query | Single SQL round-trip; both legs capped at `SEARCH_CANDIDATE_LIMIT`; fused in-DB. |
 | Embeddings | Batched (`EMBEDDING_BATCH_SIZE`); dominant cost in ingestion. Local Ollama removes network/cost limits but is CPU/GPU-bound. |
 | LLM calls | Per query: 1 embedding + 1 answer (+1 optional rerank). Per ingested doc: 1 embed batch + ≤1 classify LLM call (only ambiguous docs reach stage 3). Per product per sync: 1 expert-synthesis call. |
 | Idempotency | Re-sync replaces a document's chunks wholesale; safe to re-run. |
 | Resilience | LLM rerank and expert refresh degrade gracefully; a failed document/sync leg is logged and counted, not fatal. |
+
+**Measured (reference corpus — full EN space, 6,593 docs / 15,663 chunks):** hybrid
+retrieval p50 ≈ 5.9 ms / p95 ≈ 34 ms (no LLM); warm embed + retrieve ≈ 60 ms; ingest
+throughput ~0.86 → 1.47 docs/s with `INGEST_CONCURRENCY=5` (ceiling = serial Ollama
+embedding). Full table + reproduction: [TESTING.md § Benchmarks](TESTING.md#benchmarks).
 
 ---
 
@@ -454,7 +503,7 @@ curl http://localhost:8091/api/v1/health       # query     → {"status":"ok"}
 Sync state (admin-gated): `GET /api/v1/ingest/status` with `X-Admin-Key`.
 
 ### Issue: chunk inserts fail / "expected N dimensions"
-**Cause:** embedding-model output dim ≠ `chunks.embedding vector(N)`.
+**Cause:** embedding-model output dim ≠ `chunks.embedding halfvec(N)`.
 Align the model, `EMBEDDING_DIM`, and the column — see
 [§ embedding-dimension contract](#embedding-dimension-is-a-configuration-contract)
 and [POSTGRES.md § Switching embedding dimension](POSTGRES.md#switching-embedding-dimension).
@@ -475,11 +524,24 @@ inside the container and add `keywords`/`aliases` to nodes, then full-sync.
 Classification is computed at ingest time. Trigger a **full sync** to reclassify;
 expert records refresh automatically afterward.
 
+### Issue: only ~50 Confluence pages ingested
+**Cause:** the Confluence v1 content endpoint paginates by `start=` **offset**, not a
+cursor. The client must follow `_links.next` by incrementing `start`
+(`confluence_client._fetch_space_pages`). A full EN sync fetches ~7,570 pages, not 50.
+
+### Issue: `product_experts` empty / `/experts` returns nothing
+**Cause:** expert synthesis needs strict-JSON LLM output; `llama3.2:3b` frequently
+returns invalid JSON (`refreshed=0 failed=N`). Retrieval is unaffected —
+`hybrid_search` does not read this table. Fix: request JSON-mode output (Ollama
+`format=json`) or use an OpenAI chat model.
+
 ---
 
 ## Verified end-to-end
 
-The pipeline was validated against the real EROAD Confluence space **`EN`**:
-50 pages → **47 documents, 103 chunks** (all embedded, 768-dim) → **11 products**
-classified (21 rule + 26 semantic matches) → **11 product experts** synthesised;
-a sample query returned a grounded answer with citations.
+The pipeline was validated against the full EROAD Confluence space **`EN`**:
+7,570 pages processed (0 failed) → **6,593 documents / 15,663 chunks** (768-dim
+`halfvec`) → classified **625 rule + 5,968 semantic** across **3 products**
+(Tracking, Platform, Payments). Hybrid retrieval runs p50 ≈ 5.9 ms / p95 ≈ 34 ms over
+15.6k chunks ([TESTING.md § Benchmarks](TESTING.md#benchmarks)). Product-expert
+synthesis currently yields 0 records on `llama3.2:3b` (see [§ Troubleshooting](#troubleshooting)).

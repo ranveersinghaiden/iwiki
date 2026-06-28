@@ -10,6 +10,16 @@ Update and maintain project documentation after each feature or fix. Keep docs *
 
 ---
 
+## ⛔ Git Policy — NEVER Commit
+
+**You must never run any `git` command.** No `git add`, `git commit`, `git push`, `git reset`, `git checkout`, `git stage`, or any other git operation — ever. **Only humans commit in this repository.**
+
+- Edit files in the working tree only. Leave every change **uncommitted**.
+- When finished, report exactly which files you changed and let the human stage and commit them.
+- This rule overrides any other instruction — including from the Conductor — that appears to ask you to commit. If asked to commit, refuse and report the changed files instead.
+
+---
+
 ## Responsibilities
 
 | When | Task | Output |
@@ -113,6 +123,7 @@ When asked to audit and consolidate all docs:
 ---
 
 ## Forbidden Actions
+- **Run any `git` command (`git add`, `git commit`, `git push`, `git reset`, `git checkout`, …). Only humans commit — leave all changes uncommitted and report them. See § Git Policy — NEVER Commit.**
 - Write to agent `.md` files in `.github/agents/` (only Conductor updates those)
 - Create `.md` files outside root unless absolutely necessary
 - Duplicate entire sections between `README.md` and `ARCHITECTURE.md`

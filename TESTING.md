@@ -46,8 +46,11 @@ SELECT count(*) FROM chunks;
 SELECT vector_dims(embedding) FROM chunks LIMIT 1;        -- matches EMBEDDING_DIM
 SELECT source_type, last_run_status, total_items_indexed FROM sync_state;
 ```
+**Reference corpus:** a full EN-space sync yields **6,593 documents / 15,663
+chunks** — see [§ Benchmarks](#benchmarks).
+
 **Failure modes:**
-- Inserts fail with a dimensions error → embedding width ≠ `vector(N)` column
+- Inserts fail with a dimensions error → embedding width ≠ `halfvec(N)` column
   ([POSTGRES.md § Switching embedding dimension](POSTGRES.md#switching-embedding-dimension)).
 - 0 documents → check Jira/Confluence credentials and that `JIRA_PROJECTS` /
   `CONFLUENCE_SPACES` are set.
@@ -70,6 +73,15 @@ Verify the watermark advanced:
 ```sql
 SELECT source_type, last_synced_at FROM sync_state;
 ```
+
+### Delete reconciliation
+Removes indexed docs that no longer exist at the source. Runs automatically on every
+**full** sync, and on demand:
+```bash
+curl -X POST http://localhost:8090/api/v1/ingest/reconcile -H "X-Admin-Key: $ADMIN"  # → 202
+```
+**Safety guard:** if a source returns an **empty** id set (e.g. an API outage), its
+reconciliation is **skipped** — nothing is deleted.
 
 ---
 
@@ -173,6 +185,11 @@ curl http://localhost:8091/api/v1/experts/Safety
 ```sql
 SELECT product, component, source_document_count, updated_at FROM product_experts ORDER BY product;
 ```
+> **Known issue (local Ollama):** with `llama3.2:3b` the synthesis prompt returns
+> invalid JSON, so `product_experts` stays **empty** (`refreshed=0 failed=N`) and the
+> `/experts` endpoints return `[]` / `404`. `hybrid_search` does **not** read this
+> table, so retrieval is unaffected. Fix tracked in
+> [ARCHITECTURE.md § Troubleshooting](ARCHITECTURE.md#troubleshooting).
 
 ---
 
@@ -197,6 +214,37 @@ docker compose start db
 ```
 Unhandled exceptions are caught by a global handler returning
 `{"error":"Internal server error"}` with HTTP 500.
+
+---
+
+## Benchmarks
+
+Reference corpus: the full EROAD Confluence **`EN`** space — **6,593 documents /
+15,663 chunks** (768-dim `halfvec`, HNSW `m=24, ef_construction=128`).
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Full EN ingest | 7,570 pages → 6,593 docs / 15,663 chunks | 0 failed; rest filtered (empty / no-chunk / non-current bodies) |
+| Ingest throughput | ~0.86 → **1.47 docs/s** | After `INGEST_CONCURRENCY=5`; ceiling is Ollama serial embedding |
+| Retrieval p50 | **≈ 5.9 ms** | Pure `hybrid_search` (pgvector HNSW + FTS + RRF), no LLM, 15.6k chunks |
+| Retrieval p95 | **≈ 34 ms** | same |
+| Warm embed + retrieve | **≈ 60 ms** | ~45 ms `nomic-embed-text` embed + ~16 ms retrieve; excludes LLM answer |
+
+Retrieval timing covers `hybrid_search` only (vector + FTS + RRF), excluding
+embedding and answer generation. The query service sets `hnsw.ef_search =
+max(40, 2×SEARCH_CANDIDATE_LIMIT)` (= 200 at the default 100). Reproduce the DB-side
+vector latency with psql timing (wrap in a txn so `SET LOCAL` applies):
+```bash
+docker compose exec db psql -U iwiki -d iwiki -c "\timing on" -c "
+BEGIN;
+SET LOCAL hnsw.ef_search = 200;
+SELECT id FROM chunks
+ORDER BY embedding <=> (SELECT embedding FROM chunks LIMIT 1)
+LIMIT 8;
+COMMIT;"
+```
+Embedding latency depends on the Ollama host; warm figures assume a resident
+`nomic-embed-text` model.
 
 ---
 
