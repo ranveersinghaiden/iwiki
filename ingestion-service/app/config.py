@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4o-mini"
     # Set to Ollama base URL to use local models instead of OpenAI
     ollama_base_url: Optional[str] = None
+    # Max seconds to wait on any single embedding HTTP call. Caps runaway hangs on a
+    # slow or unresponsive provider; the SDK default is 600s.
+    ai_request_timeout_seconds: float = 120.0
 
     # ── Admin ─────────────────────────────────────────────────────────────────
     admin_api_key: str = ""

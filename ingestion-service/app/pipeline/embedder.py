@@ -15,6 +15,7 @@ class Embedder:
         self._client = AsyncOpenAI(
             api_key=settings.openai_api_key,
             base_url=settings.ai_base_url,  # None → OpenAI default; set for Ollama
+            timeout=settings.ai_request_timeout_seconds,
         )
         self._model = settings.embedding_model
         self._batch_size = settings.embedding_batch_size

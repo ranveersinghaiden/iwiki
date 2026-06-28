@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     embedding_dim: int = 1536
     llm_model: str = "gpt-4o-mini"
     ollama_base_url: Optional[str] = None
+    # Max seconds to wait on any single OpenAI/Ollama HTTP call (embedding, rerank,
+    # answer generation). Caps runaway hangs on a slow or unresponsive provider; the
+    # SDK default is 600s, which can tie up a request for ten minutes.
+    ai_request_timeout_seconds: float = 120.0
 
     # Hybrid search tuning
     # Number of candidates fetched from each of vector + FTS legs before RRF.
