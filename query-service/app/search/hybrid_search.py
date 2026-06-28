@@ -142,7 +142,12 @@ async def hybrid_search(
         k=_RRF_K,
     )
 
-    logger.info("[hybrid_search] executing sql (first 300 chars): %s", sql[:300])
+    logger.debug(
+        "[hybrid_search] candidate_limit=%d filters=%d rrf_k=%d",
+        settings.search_candidate_limit,
+        len(where_parts),
+        _RRF_K,
+    )
     try:
         # Tune HNSW ef_search for quality vs speed. candidate_limit * 2 gives
         # a wider search beam than the default (40), ensuring small datasets are covered.
